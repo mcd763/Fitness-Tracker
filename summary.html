@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training Summary</title>
+  <link rel="stylesheet" href="workout.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js"></script>
+</head>
+<body>
+
+  <div class="page">
+
+    <!-- NAV -->
+    <nav style="
+      display: flex;
+      gap: 10px;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-primary);
+      padding-bottom: 1rem;
+    ">
+      <a href="workout.html" style="
+        font-family: var(--font-display); font-size: 11px; font-weight: 600;
+        letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary);
+        text-decoration: none; padding: 5px 12px; border: 1px solid var(--border-primary);
+        border-radius: var(--radius-tag);
+      ">← Plan</a>
+      <a href="log.html" style="
+        font-family: var(--font-display); font-size: 11px; font-weight: 600;
+        letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary);
+        text-decoration: none; padding: 5px 12px; border: 1px solid var(--border-primary);
+        border-radius: var(--radius-tag);
+      ">Log</a>
+      <a href="summary.html" style="
+        font-family: var(--font-display); font-size: 11px; font-weight: 600;
+        letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-fire-text);
+        text-decoration: none; padding: 5px 12px; border: 1px solid var(--accent-fire);
+        border-radius: var(--radius-tag); background: var(--accent-fire-bg);
+      ">Summary</a>
+
+      <button id="theme-toggle" onclick="toggleTheme()" style="
+        margin-left: auto;
+        font-family: var(--font-display);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: var(--radius-tag);
+        cursor: pointer;
+        background: none;
+        border: 1px solid var(--border-primary);
+        color: var(--text-secondary);
+      ">Light</button>
+      
+      <button onclick="signOut()" style="
+        font-family: var(--font-display);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: var(--radius-tag);
+        cursor: pointer;
+        background: none;
+        border: 1px solid var(--border-primary);
+        color: var(--text-tertiary);
+      ">Sign out</button>
+    </nav>
+
+    <!-- HEADER -->
+    <header class="page-header">
+      <h1>Training Summary</h1>
+      <p id="summary-subtitle">Mar 13 – May 1</p>
+    </header>
+
+    <!-- VIEW TOGGLE -->
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button onclick="setView('program')" id="btn-program" style="
+          font-family:var(--font-display); font-size:11px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase; padding:5px 14px;
+          border-radius:var(--radius-tag); cursor:pointer;
+          background:var(--accent-fire-bg); border:1px solid var(--accent-fire);
+          color:var(--accent-fire-text);
+        ">Program</button>
+        <button onclick="setView('weekly')" id="btn-weekly" style="
+          font-family:var(--font-display); font-size:11px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase; padding:5px 14px;
+          border-radius:var(--radius-tag); cursor:pointer;
+          background:none; border:1px solid var(--border-primary);
+          color:var(--text-tertiary);
+        ">Weekly</button>
+        <button onclick="setView('monthly')" id="btn-monthly" style="
+          font-family:var(--font-display); font-size:11px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase; padding:5px 14px;
+          border-radius:var(--radius-tag); cursor:pointer;
+          background:none; border:1px solid var(--border-primary);
+          color:var(--text-tertiary);
+        ">Monthly</button>
+      </div>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div id="summary-content"></div>
+
+  </div>
+
+<script>
+  // ── Load data ─────────────────────────────────────────────
+  let entries  = [];
+  let weighins = [];
+  let gtgLog   = [];
+  let pguLog   = [];
+
+  const START = new Date('2026-03-13');
+  const END   = new Date('2026-05-01');
+
+  let currentView = 'program';
+  let charts = [];
+
+  // ── Helpers ───────────────────────────────────────────────
+  function destroyCharts() {
+    charts.forEach(c => c.destroy());
+    charts = [];
+  }
+
+  function weekLabel(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    const week = Math.ceil(((d - START) / 86400000 + 1) / 7);
+    return 'Wk ' + Math.max(1, week);
+  }
+
+  function getWeekNumber(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return Math.ceil(((d - START) / 86400000 + 1) / 7);
+  }
+
+  function monthLabel(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleString('default', { month: 'short', year: '2-digit' });
+  }
+
+  function calcVolume(ex) {
+    if (!ex.sets || !ex.reps) return 0;
+    const sets = parseFloat(ex.sets) || 0;
+    if (ex.varies && ex.setData) {
+      return ex.setData.reduce((sum, s) => {
+        const r = parseFloat(s.reps)   || 0;
+        const w = parseFloat(s.weight) || 0;
+        return sum + (r * w);
+      }, 0);
+    }
+    const reps   = parseFloat(ex.reps)   || 0;
+    const weight = parseFloat(ex.weight) || 0;
+    return sets * reps * weight;
+  }
+
+  function statCard(label, value, sub) {
+    return `
+      <div class="card" style="text-align:center; padding:16px 12px;">
+        <div style="font-family:var(--font-display); font-size:10px; font-weight:600;
+          letter-spacing:0.1em; text-transform:uppercase; color:var(--text-label);
+          margin-bottom:6px;">${label}</div>
+        <div style="font-family:var(--font-display); font-size:28px; font-weight:700;
+          color:var(--text-primary); line-height:1;">${value}</div>
+        ${sub ? `<div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">${sub}</div>` : ''}
+      </div>`;
+  }
+
+  function chartCard(title, canvasId) {
+    return `
+      <div class="card">
+        <p class="section-label">${title}</p>
+        <canvas id="${canvasId}" height="120"></canvas>
+      </div>`;
+  }
+
+  function makeChart(id, type, labels, datasets, options) {
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    const c = new Chart(ctx, {
+      type,
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: datasets.length > 1, labels: { color: '#8a897f', font: { size: 11 } } } },
+        scales: {
+          x: { ticks: { color: '#555650', font: { size: 10 } }, grid: { color: '#2e3029' } },
+          y: { ticks: { color: '#555650', font: { size: 10 } }, grid: { color: '#2e3029' } },
+        },
+        ...options,
+      }
+    });
+    charts.push(c);
+  }
+
+  // ── Weekly minimums checker ───────────────────────────────
+  function getWeeklyCompliance() {
+    const weeks = {};
+    entries.forEach(e => {
+      const wk = getWeekNumber(e.date);
+      if (wk < 1) return;
+      if (!weeks[wk]) weeks[wk] = { upper:false, lower:false, stairs:false, run:false };
+      if (e.type === 'Upper Day')               weeks[wk].upper  = true;
+      if (e.type === 'Lower Day')               weeks[wk].lower  = true;
+      if (['Stairs','Sandbag'].includes(e.type)) weeks[wk].stairs = true;
+      if (e.type === 'Run')                     weeks[wk].run    = true;
+    });
+    return weeks;
+  }
+
+  // ── Streak ────────────────────────────────────────────────
+  function getLongestStreak() {
+    const weeks = getWeeklyCompliance();
+    let longest = 0, current = 0;
+    for (let w = 1; w <= 6; w++) {
+      const wk = weeks[w];
+      if (wk && wk.upper && wk.lower) {
+        current++;
+        longest = Math.max(longest, current);
+      } else {
+        current = 0;
+      }
+    }
+    return longest;
+  }
+
+  // ── View toggle ───────────────────────────────────────────
+  function setView(view) {
+    currentView = view;
+    ['program','weekly','monthly'].forEach(v => {
+      const btn = document.getElementById('btn-' + v);
+      const active = v === view;
+      btn.style.background   = active ? 'var(--accent-fire-bg)' : 'none';
+      btn.style.borderColor  = active ? 'var(--accent-fire)'    : 'var(--border-primary)';
+      btn.style.color        = active ? 'var(--accent-fire-text)' : 'var(--text-tertiary)';
+    });
+    destroyCharts();
+    if (view === 'program') renderProgram();
+    if (view === 'weekly')  renderWeekly();
+    if (view === 'monthly') renderMonthly();
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // PROGRAM VIEW
+  // ─────────────────────────────────────────────────────────
+  function renderProgram() {
+    const totalSessions = entries.length;
+    const totalVolume   = entries.reduce((sum, e) => {
+      return sum + (e.exercises || []).reduce((s, ex) => s + calcVolume(ex), 0);
+    }, 0);
+
+    const typeCounts = {};
+    entries.forEach(e => { typeCounts[e.type] = (typeCounts[e.type] || 0) + 1; });
+
+    const streak = getLongestStreak();
+    const weeks  = getWeeklyCompliance();
+    const fullWeeks = Object.values(weeks).filter(w => w.upper && w.lower).length;
+
+
+    // Weight change
+    const sortedWeighins = [...weighins].sort((a,b) => new Date(a.date) - new Date(b.date));
+    const firstW = sortedWeighins[0];
+    const lastW  = sortedWeighins[sortedWeighins.length - 1];
+    const weightDelta = firstW && lastW && firstW !== lastW
+      ? (lastW.weight - firstW.weight).toFixed(1)
+      : null;
+
+    // Weekly compliance table
+    const complianceRows = [1,2,3,4,5,6].map(w => {
+      const wk = weeks[w] || {};
+      const check = (v) => v
+        ? `<span style="color:var(--accent-grip-text);">✓</span>`
+        : `<span style="color:var(--text-tertiary);">✗</span>`;
+      return `
+        <div style="display:flex; gap:12px; align-items:center; padding:7px 0;
+          border-bottom:1px solid var(--border-primary); font-size:12px;">
+          <span style="font-family:var(--font-display); font-size:11px; font-weight:600;
+            color:var(--text-tertiary); width:40px;">WK ${w}</span>
+          <span style="flex:1; display:flex; gap:16px;">
+            <span>${check(wk.upper)} Upper</span>
+            <span>${check(wk.lower)} Lower</span>
+            <span>${check(wk.stairs)} Stairs/Bag</span>
+            <span>${check(wk.run)} Run</span>
+          </span>
+        </div>`;
+    }).join('');
+
+    // Volume by week for chart
+    const volByWeek = {};
+    entries.forEach(e => {
+      const wk = 'Wk ' + getWeekNumber(e.date);
+      const vol = (e.exercises || []).reduce((s, ex) => s + calcVolume(ex), 0);
+      volByWeek[wk] = (volByWeek[wk] || 0) + vol;
+    });
+    const volLabels = Object.keys(volByWeek);
+    const volData   = Object.values(volByWeek);
+
+    // Weight chart data
+    const wiLabels = sortedWeighins.map(w => w.date);
+    const wiData   = sortedWeighins.map(w => w.weight);
+
+    // GTG data
+    const gtgLog = JSON.parse(localStorage.getItem('gtg-log') || '[]');
+    const gtgGoal = parseInt(localStorage.getItem('gtg-goal') || '15');
+    const gtgByDay = {};
+    gtgLog.forEach(e => {
+      gtgByDay[e.date] = (gtgByDay[e.date] || 0) + e.reps;
+    });
+    const gtgLabels = Object.keys(gtgByDay).sort();
+    const gtgData   = gtgLabels.map(d => gtgByDay[d]);
+
+    // PGU data
+    const pguByDay = {};
+    pguLog.forEach(e => {
+      pguByDay[e.date] = (pguByDay[e.date] || 0) + e.reps;
+    });
+    const pguLabels = Object.keys(pguByDay).sort();
+    const pguData   = pguLabels.map(d => pguByDay[d]);
+
+    // Stair progression data
+    const stairsSessions = getStairsSessions();
+    const stairsLabels   = stairsSessions.map(e => e.date);
+    const stairsRepsData = stairsSessions.map(e => parseFloat(e.stairsData.reps) || 0);
+    const stairsRPMData  = stairsSessions.map(e => parseRPM(e.stairsData.rpm));
+    const readiness      = packTestReadiness(stairsSessions);
+
+    // Continuous time per session
+    const weekBenchmarks = { 1:30, 2:45, 3:60, 4:75, 5:90, 6:120 };
+    const continuousData = stairsSessions.map(e => {
+      const dur = parseFloat(e.duration) || 0;
+      const breaks = (e.stairsData.breaks || []).reduce((sum, b) => {
+        const mins = parseFloat(b.duration) || 0;
+        return sum + (mins > 2 ? mins : 0);
+      }, 0);
+      return Math.max(0, dur - breaks);
+    });
+    const benchmarkData = stairsSessions.map(e => {
+      const wk = Math.min(6, Math.max(1, getWeekNumber(e.date)));
+      return weekBenchmarks[wk] || 30;
+    });
+
+    const stairsProgressHTML = readiness ? `
+      <div class="card" style="margin-bottom:12px;">
+        <p class="section-label">Pack test readiness</p>
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:10px;">
+          <div style="font-family:var(--font-display); font-size:36px; font-weight:700;
+            color:${readiness.color}; line-height:1;">${readiness.pct}%</div>
+          <div>
+            <div style="font-family:var(--font-display); font-size:14px; font-weight:600;
+              color:${readiness.color}; letter-spacing:0.05em;">${readiness.status}</div>
+            <div style="font-size:11px; color:var(--text-tertiary); margin-top:2px;">based on last 3 stair sessions</div>
+          </div>
+        </div>
+        <div style="
+          background:var(--bg-card-alt);
+          border:1px solid var(--border-primary);
+          border-radius:3px; height:6px; overflow:hidden; margin-bottom:10px;
+        ">
+          <div style="
+            height:100%; border-radius:3px;
+            background:${readiness.color};
+            width:${readiness.pct}%;
+            transition:width 0.4s ease;
+          "></div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          ${readiness.signals.map(s => `
+            <div style="font-size:11px; color:var(--text-secondary);">${s}</div>
+          `).join('')}
+        </div>
+      </div>` : '';
+
+
+    document.getElementById('summary-content').innerHTML = `
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+        ${statCard('Sessions', totalSessions, 'total logged')}
+        ${statCard('Full weeks', fullWeeks + '/6', 'upper + lower both done')}
+        ${statCard('Best streak', streak + (streak === 1 ? ' week' : ' weeks'), 'consecutive full weeks')}
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+        ${statCard('Total volume', totalVolume > 0 ? Math.round(totalVolume).toLocaleString() + ' lbs' : '—', 'sets × reps × weight')}
+        ${statCard('Weight change', weightDelta !== null ? (weightDelta > 0 ? '+' : '') + weightDelta + ' lbs' : '—', firstW && lastW ? firstW.weight + ' → ' + lastW.weight + ' lbs' : 'log weigh-ins to track')}
+      </div>
+
+      <div class="card" style="margin-bottom:12px;">
+        <p class="section-label">Weekly minimums</p>
+        ${complianceRows}
+      </div>
+
+      ${volData.length > 0 ? chartCard('Weekly volume (lbs)', 'chart-vol') : ''}
+      ${wiData.length > 0  ? chartCard('Bodyweight trend', 'chart-weight') : ''}
+      ${gtgLabels.length > 0 ? chartCard('Pull-up progression (daily total)', 'chart-gtg') : ''}
+      ${pguLabels.length > 0 ? chartCard('Push-up progression (daily total)', 'chart-pgu') : ''}
+      ${stairsSessions.length > 0 ? stairsProgressHTML : ''}
+      ${stairsSessions.length > 0 ? chartCard('Stair reps per session', 'chart-stairs-reps') : ''}
+      ${stairsSessions.length > 0 && stairsRPMData.some(v => v > 0) ? chartCard('Reps/min trend', 'chart-stairs-rpm') : ''}
+      ${stairsSessions.length > 0 ? chartCard('Continuous time vs benchmark (min)', 'chart-stairs-endurance') : ''}
+    `;
+
+    if (volData.length > 0) {
+      makeChart('chart-vol', 'bar', volLabels, [{
+        label: 'Volume',
+        data: volData,
+        backgroundColor: '#c0440f88',
+        borderColor: '#c0440f',
+        borderWidth: 1,
+        borderRadius: 3,
+      }]);
+    }
+
+    if (wiData.length > 0) {
+      makeChart('chart-weight', 'line', wiLabels, [{
+        label: 'Weight',
+        data: wiData,
+        borderColor: '#74b84e',
+        backgroundColor: '#74b84e22',
+        pointBackgroundColor: '#74b84e',
+        tension: 0.3,
+        fill: true,
+      }]);
+    }
+
+    if (gtgLabels.length > 0) {
+      makeChart('chart-gtg', 'bar', gtgLabels, [
+        {
+          label: 'Daily reps',
+          data: gtgData,
+          backgroundColor: gtgData.map(v => v >= gtgGoal ? '#74b84e88' : '#2d5a1b88'),
+          borderColor:     gtgData.map(v => v >= gtgGoal ? '#74b84e'   : '#2d5a1b'),
+          borderWidth: 1,
+          borderRadius: 3,
+        }
+      ]);
+    }
+
+    if (pguLabels.length > 0) {
+      makeChart('chart-pgu', 'bar', pguLabels, [{
+        label: 'Daily reps',
+        data: pguData,
+        backgroundColor: pguData.map(v => v >= 30 ? '#d4aa4a88' : '#7a612088'),
+        borderColor:     pguData.map(v => v >= 30 ? '#d4aa4a'   : '#7a6120'),
+        borderWidth: 1,
+        borderRadius: 3,
+      }]);
+    }
+
+    if (stairsSessions.length > 0) {
+      makeChart('chart-stairs-reps', 'bar', stairsLabels, [{
+        label: 'Total reps',
+        data: stairsRepsData,
+        backgroundColor: '#c0440f88',
+        borderColor: '#c0440f',
+        borderWidth: 1,
+        borderRadius: 3,
+      }]);
+    }
+
+    if (stairsSessions.length > 0 && stairsRPMData.some(v => v > 0)) {
+      makeChart('chart-stairs-rpm', 'line', stairsLabels, [{
+        label: 'Reps/min',
+        data: stairsRPMData,
+        borderColor: '#d4aa4a',
+        backgroundColor: '#d4aa4a22',
+        pointBackgroundColor: '#d4aa4a',
+        tension: 0.3,
+        fill: true,
+      }]);
+    }
+    if (stairsSessions.length > 0) {
+      makeChart('chart-stairs-endurance', 'line', stairsLabels, [
+        {
+          label: 'Continuous time (min)',
+          data: continuousData,
+          borderColor: '#d4aa4a',
+          backgroundColor: '#d4aa4a22',
+          pointBackgroundColor: '#d4aa4a',
+          tension: 0.3,
+          fill: true,
+        },
+        {
+          label: 'Weekly benchmark',
+          data: benchmarkData,
+          borderColor: '#c0440f',
+          backgroundColor: 'transparent',
+          borderDash: [5, 5],
+          pointRadius: 0,
+          tension: 0,
+          fill: false,
+        }
+      ]);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // WEEKLY VIEW
+  // ─────────────────────────────────────────────────────────
+  function renderWeekly() {
+    const weeks = getWeeklyCompliance();
+    let html = '';
+
+    for (let w = 1; w <= 6; w++) {
+      const weekEntries = entries.filter(e => getWeekNumber(e.date) === w);
+      if (weekEntries.length === 0) {
+        html += `
+          <div class="card" style="margin-bottom:12px;">
+            <p class="section-label">Week ${w}</p>
+            <p style="font-size:12px; color:var(--text-tertiary);">No sessions logged.</p>
+          </div>`;
+        continue;
+      }
+
+      const wk  = weeks[w] || {};
+      const vol = weekEntries.reduce((sum, e) =>
+        sum + (e.exercises || []).reduce((s, ex) => s + calcVolume(ex), 0), 0);
+
+      const check = (v) => v
+        ? `<span style="color:var(--accent-grip-text); font-size:11px;">✓</span>`
+        : `<span style="color:var(--text-tertiary); font-size:11px;">✗</span>`;
+
+      const sessionRows = weekEntries.map(e => {
+        const exCount = (e.exercises || []).length;
+        const eVol = (e.exercises || []).reduce((s, ex) => s + calcVolume(ex), 0);
+        return `
+          <div style="display:flex; align-items:center; gap:10px; padding:6px 0;
+            border-bottom:1px solid var(--border-primary); font-size:12px;">
+            <span style="color:var(--text-tertiary); font-size:11px; min-width:88px;">${e.date}</span>
+            <span class="tag tag-grip" style="margin-left:0; flex-shrink:0;">${e.type}</span>
+            <span style="color:var(--text-secondary); font-size:11px; flex:1;">
+              ${exCount > 0 ? exCount + ' exercises' : ''}
+              ${eVol > 0 ? ' · ' + Math.round(eVol).toLocaleString() + ' lbs' : ''}
+              ${e.duration ? ' · ' + e.duration : ''}
+            </span>
+          </div>`;
+      }).join('');
+
+      html += `
+        <div class="card" style="margin-bottom:12px;">
+          <p class="section-label">Week ${w}</p>
+          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:10px; font-size:11px;">
+            <span>${check(wk.upper)} Upper</span>
+            <span>${check(wk.lower)} Lower</span>
+            <span>${check(wk.stairs)} Stairs/Bag</span>
+            <span>${check(wk.run)} Run</span>
+            ${vol > 0 ? `<span style="color:var(--text-secondary); margin-left:auto;">${Math.round(vol).toLocaleString()} lbs total volume</span>` : ''}
+          </div>
+          ${sessionRows}
+        </div>`;
+    }
+
+    document.getElementById('summary-content').innerHTML = html;
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // MONTHLY VIEW
+  // ─────────────────────────────────────────────────────────
+  function renderMonthly() {
+    const months = {};
+    entries.forEach(e => {
+      const m = monthLabel(e.date);
+      if (!months[m]) months[m] = { sessions:0, volume:0, types:{} };
+      months[m].sessions++;
+      months[m].volume += (e.exercises || []).reduce((s, ex) => s + calcVolume(ex), 0);
+      months[m].types[e.type] = (months[m].types[e.type] || 0) + 1;
+    });
+
+    if (Object.keys(months).length === 0) {
+      document.getElementById('summary-content').innerHTML = `
+        <div class="card">
+          <p style="font-size:12px; color:var(--text-tertiary);">No sessions logged yet.</p>
+        </div>`;
+      return;
+    }
+
+    const mLabels  = Object.keys(months);
+    const mSessions = mLabels.map(m => months[m].sessions);
+    const mVolume   = mLabels.map(m => Math.round(months[m].volume));
+
+    let html = '';
+
+    mLabels.forEach(m => {
+      const mo = months[m];
+      const typeRows = Object.entries(mo.types)
+        .sort((a,b) => b[1]-a[1])
+        .map(([type, count]) => `
+          <div class="ex-row">
+            <span class="ex-name">${type}</span>
+            <span class="ex-detail">${count} session${count > 1 ? 's' : ''}</span>
+          </div>`).join('');
+
+      html += `
+        <div class="card" style="margin-bottom:12px;">
+          <p class="section-label">${m}</p>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:12px;">
+            ${statCard('Sessions', mo.sessions, '')}
+            ${statCard('Volume', mo.volume > 0 ? Math.round(mo.volume).toLocaleString() + ' lbs' : '—', '')}
+            ${statCard('Session types', Object.keys(mo.types).length, 'different types')}
+          </div>
+          ${typeRows}
+        </div>`;
+    });
+
+    // GTG by month
+    const gtgMonths = {};
+    gtgLog.forEach(e => {
+      const m = monthLabel(e.date);
+      gtgMonths[m] = (gtgMonths[m] || 0) + e.reps;
+    });
+    const gtgMonthLabels = Object.keys(gtgMonths);
+    const gtgMonthData   = gtgMonthLabels.map(m => gtgMonths[m]);
+
+    // PGU by month
+    const pguMonths = {};
+    pguLog.forEach(e => {
+      const m = monthLabel(e.date);
+      pguMonths[m] = (pguMonths[m] || 0) + e.reps;
+    });
+    const pguMonthLabels = Object.keys(pguMonths);
+    const pguMonthData   = pguMonthLabels.map(m => pguMonths[m]);
+
+    html += chartCard('Sessions per month', 'chart-monthly-sessions');
+    html += chartCard('Volume per month (lbs)', 'chart-monthly-volume');
+    if (gtgMonthLabels.length > 0) {
+      html += chartCard('Pull-up total per month', 'chart-monthly-gtg');
+    }
+    if (pguMonthLabels.length > 0) {
+      html += chartCard('Push-up total per month', 'chart-monthly-pgu');
+    }
+
+    document.getElementById('summary-content').innerHTML = html;
+
+    makeChart('chart-monthly-sessions', 'bar', mLabels, [{
+      label: 'Sessions',
+      data: mSessions,
+      backgroundColor: '#c0440f88',
+      borderColor: '#c0440f',
+      borderWidth: 1,
+      borderRadius: 3,
+    }]);
+
+    makeChart('chart-monthly-volume', 'bar', mLabels, [{
+      label: 'Volume (lbs)',
+      data: mVolume,
+      backgroundColor: '#2d5a1b88',
+      borderColor: '#74b84e',
+      borderWidth: 1,
+      borderRadius: 3,
+    }]);
+
+    if (gtgMonthLabels.length > 0) {
+      makeChart('chart-monthly-gtg', 'bar', gtgMonthLabels, [{
+        label: 'Pull-ups',
+        data: gtgMonthData,
+        backgroundColor: '#2d5a1b88',
+        borderColor: '#74b84e',
+        borderWidth: 1,
+        borderRadius: 3,
+      }]);
+    }
+
+    if (pguMonthLabels.length > 0) {
+      makeChart('chart-monthly-pgu', 'bar', pguMonthLabels, [{
+        label: 'Push-ups',
+        data: pguMonthData,
+        backgroundColor: '#7a612088',
+        borderColor: '#d4aa4a',
+        borderWidth: 1,
+        borderRadius: 3,
+      }]);
+    }
+  }
+
+  // ── Stair progression helpers ─────────────────────────────
+  function getStairsSessions() {
+    return entries.filter(e => e.type === 'Stairs' && e.stairsData);
+  }
+
+  function getRecentRucks() {
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    return entries.filter(e => {
+      if (e.type !== 'Ruck' || !e.ruckData) return false;
+      return new Date(e.date + 'T00:00:00') >= twoWeeksAgo;
+    });
+  }
+
+  function parseRPM(rpm) {
+    return parseFloat(rpm) || 0;
+  }
+
+  function parseDistance(dist) {
+    if (!dist) return 0;
+    return parseFloat(dist) || 0;
+  }
+
+  function parseWeight(w) {
+    if (!w) return 0;
+    return parseFloat(w) || 0;
+  }
+
+function packTestReadiness(sessions) {
+    if (sessions.length === 0) return null;
+
+    let score = 0;
+    let signals = [];
+    const maxScore = 21;
+
+    const recent = sessions.slice(-3);
+    const avgRPM  = recent.reduce((s, e) => s + parseRPM(e.stairsData.rpm), 0) / recent.length;
+    const avgReps = recent.reduce((s, e) => s + (parseFloat(e.stairsData.reps) || 0), 0) / recent.length;
+    const using45 = recent.some(e => parseWeight(e.stairsData.pack) >= 45);
+
+    // ── Pace signal (0-4 pts) ──
+    if (avgRPM >= 1.5)      { score += 4; signals.push('✓ Pace strong (above 1.5/min)'); }
+    else if (avgRPM >= 1.0) { score += 3; signals.push('✓ Pace on track (above 1/min)'); }
+    else if (avgRPM >= 0.5) { score += 1; signals.push('⚠ Pace needs work (below 1/min)'); }
+    else if (avgRPM > 0)    {             signals.push('✗ Pace too low'); }
+
+    // ── Volume signal (0-4 pts) ──
+    if (avgReps >= 120)     { score += 4; signals.push('✓ Volume excellent (120+ reps)'); }
+    else if (avgReps >= 80) { score += 3; signals.push('✓ Volume good (80+ reps)'); }
+    else if (avgReps >= 40) { score += 2; signals.push('⚠ Volume building (40+ reps)'); }
+    else if (avgReps > 0)   { score += 1; signals.push('⚠ Volume low — push for more reps'); }
+
+    // ── Pack weight signal (0-3 pts) ──
+    if (using45) { score += 3; signals.push('✓ Pack weight at test level (45lbs)'); }
+    else {
+      const maxPack = Math.max(...recent.map(e => parseWeight(e.stairsData.pack)));
+      if (maxPack >= 35)    { score += 2; signals.push('⚠ Pack at 35lbs+ — build to 45lbs'); }
+      else if (maxPack > 0) { score += 1; signals.push('✗ Pack weight too low'); }
+    }
+
+    // ── Endurance signal (0-4 pts) ──
+    // Benchmark per week of the program
+    const weekBenchmarks = { 1:30, 2:45, 3:60, 4:75, 5:90, 6:120 };
+
+    // Calculate continuous time per session (duration minus breaks over 2 min)
+    function calcContinuous(entry) {
+      const dur = parseFloat(entry.duration) || 0;
+      const breaks = entry.stairsData.breaks || [];
+      const longBreaks = breaks.reduce((sum, b) => {
+        const mins = parseFloat(b.duration) || 0;
+        return sum + (mins > 2 ? mins : 0);
+      }, 0);
+      return Math.max(0, dur - longBreaks);
+    }
+
+    // Get benchmark for each session based on its week number
+    const enduranceScores = recent.map(e => {
+      const wk = Math.min(6, Math.max(1, getWeekNumber ? getWeekNumber(e.date) : 1));
+      const benchmark = weekBenchmarks[wk] || 30;
+      const continuous = calcContinuous(e);
+      const ratio = benchmark > 0 ? continuous / benchmark : 0;
+
+      // Manual override: if they marked exceeded, treat as 110% of benchmark
+      if (e.stairsData.hitTarget === 'exceeded') return 1.1;
+      // If no duration logged fall back to hit target field
+      if (!parseFloat(e.duration) && e.stairsData.hitTarget === 'hit') return 1.0;
+      return ratio;
+    });
+
+    const avgEndurance = enduranceScores.reduce((s, v) => s + v, 0) / enduranceScores.length;
+    const latestWk = Math.min(6, Math.max(1, sessions.length > 0 ? getWeekNumber(sessions[sessions.length-1].date) : 1));
+    const currentBenchmark = weekBenchmarks[latestWk];
+
+    if (avgEndurance >= 1.1)      { score += 4; signals.push(`✓ Exceeding week ${latestWk} target (${currentBenchmark}min)`); }
+    else if (avgEndurance >= 1.0) { score += 3; signals.push(`✓ Hitting week ${latestWk} target (${currentBenchmark}min)`); }
+    else if (avgEndurance >= 0.8) { score += 2; signals.push(`⚠ Close to week ${latestWk} target — ${currentBenchmark}min benchmark`); }
+    else if (avgEndurance > 0)    { score += 1; signals.push(`✗ Below week ${latestWk} target (${currentBenchmark}min) — keep pushing`); }
+    else                          {             signals.push(`✗ Log duration to track endurance`); }
+
+    // ── Ruck bonus (up to 6 pts) ──
+    const recentRucks = getRecentRucks();
+    if (recentRucks.length > 0) {
+      signals.push('— Ruck bonus —');
+      const bestRuck = recentRucks.reduce((best, e) => {
+        const d = parseDistance(e.ruckData.distance);
+        const w = parseWeight(e.ruckData.weight);
+        const s = d * w;
+        return s > best.s ? { s, d, w } : best;
+      }, { s:0, d:0, w:0 });
+
+      const d = bestRuck.d;
+      const w = bestRuck.w;
+
+      if (d >= 3 && w >= 45)       { score += 6; signals.push('✓ Full pack test distance at weight (+6)'); }
+      else if (d >= 3 && w >= 35)  { score += 4; signals.push('✓ Full distance, building weight (+4)'); }
+      else if (d >= 2 && w >= 45)  { score += 4; signals.push('✓ Near distance at test weight (+4)'); }
+      else if (d >= 2 && w >= 35)  { score += 3; signals.push('✓ Building distance and weight (+3)'); }
+      else if (d >= 1.5 && w >= 45){ score += 3; signals.push('✓ Current distance at test weight (+3)'); }
+      else if (d >= 1.5 && w >= 35){ score += 2; signals.push('⚠ 1.5mi+ at 35lbs+ (+2)'); }
+      else                         { score += 1; signals.push('⚠ Rucking — build distance and weight (+1)'); }
+    }
+
+    const pct    = Math.min(100, Math.round((score / maxScore) * 100));
+    const status = pct >= 80 ? 'On track' : pct >= 55 ? 'Progressing' : 'Needs work';
+    const color  = pct >= 80 ? 'var(--accent-grip-text)'
+                 : pct >= 55 ? 'var(--accent-pack-text)'
+                 : 'var(--accent-fire-text)';
+
+    return { pct, status, color, signals };
+  }
+  
+
+  // ── Init ──────────────────────────────────────────────────
+  async function initSummary() {
+    const user = await requireAuth();
+    if (!user) return;
+    entries  = await loadSessions(user.id);
+    weighins = await loadWeighins(user.id);
+    const gtgData = await loadGTG(user.id);
+    gtgLog = gtgData.pullups;
+    pguLog = gtgData.pushups;
+    const prefs = await loadPreferences(user.id);
+    applyTheme(prefs.theme || localStorage.getItem('theme') || 'dark');
+    renderProgram();
+  }
+  initSummary();
+</script>
+
+<script>
+  const themes = ['dark', 'light', 'purple', 'blue', 'red'];
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = themes[(themes.indexOf(theme) + 1) % themes.length];
+  }
+
+  function toggleTheme() {
+    const current = localStorage.getItem('theme') || 'dark';
+    const next = themes[(themes.indexOf(current) + 1) % themes.length];
+    applyTheme(next);
+  }
+
+  applyTheme(localStorage.getItem('theme') || 'dark');
+</script>
+</body>
+</html>

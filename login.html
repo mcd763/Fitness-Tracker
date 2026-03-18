@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Workout Tracker</title>
+  <link rel="stylesheet" href="workout.css" />
+</head>
+<body>
+  <div class="page" style="max-width:400px;">
+    <header class="page-header" style="margin-bottom:2rem;">
+      <h1>Workout Tracker</h1>
+      <p>Sign in to access your log</p>
+    </header>
+
+    <div class="card">
+      <p class="section-label" id="auth-mode-label">Sign In</p>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+        <input type="email" id="auth-email" placeholder="Email" style="
+          background:var(--bg-card-alt); border:1px solid var(--border-accent);
+          border-radius:var(--radius-tag); color:var(--text-primary);
+          font-family:var(--font-body); font-size:13px; padding:8px 12px;
+        "/>
+        <input type="password" id="auth-password" placeholder="Password" style="
+          background:var(--bg-card-alt); border:1px solid var(--border-accent);
+          border-radius:var(--radius-tag); color:var(--text-primary);
+          font-family:var(--font-body); font-size:13px; padding:8px 12px;
+        "/>
+      </div>
+
+      <div id="auth-error" style="
+        font-size:12px; color:var(--accent-fire-text);
+        margin-bottom:10px; display:none;
+      "></div>
+
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="auth-submit" onclick="handleAuth()" style="
+          background:var(--accent-fire-bg); border:1px solid var(--accent-fire);
+          border-radius:var(--radius-tag); color:var(--accent-fire-text);
+          font-family:var(--font-display); font-size:11px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase;
+          padding:7px 18px; cursor:pointer;
+        ">Sign In</button>
+        <button onclick="toggleMode()" style="
+          background:none; border:none; color:var(--text-tertiary);
+          font-family:var(--font-body); font-size:12px; cursor:pointer;
+          text-decoration:underline; padding:0;
+        " id="auth-toggle-btn">Need an account? Sign up</button>
+      </div>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://mrckiobnrykxmunpysqf.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_wJ8a8fiYNnSgtg6DC3IYqQ_8Ec5TlRo';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let mode = 'signin';
+
+  // If already logged in go straight to the app
+  sb.auth.getSession().then(({ data }) => {
+    if (data.session) window.location.href = 'workout.html';
+  });
+
+  function toggleMode() {
+    mode = mode === 'signin' ? 'signup' : 'signin';
+    document.getElementById('auth-mode-label').textContent  = mode === 'signin' ? 'Sign In' : 'Sign Up';
+    document.getElementById('auth-submit').textContent      = mode === 'signin' ? 'Sign In' : 'Sign Up';
+    document.getElementById('auth-toggle-btn').textContent  = mode === 'signin' ? 'Need an account? Sign up' : 'Already have an account? Sign in';
+    document.getElementById('auth-error').style.display = 'none';
+  }
+
+  async function handleAuth() {
+    const email    = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const errEl    = document.getElementById('auth-error');
+    errEl.style.display = 'none';
+
+    if (!email || !password) {
+      errEl.textContent = 'Enter email and password.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('auth-submit');
+    btn.textContent = '...';
+    btn.disabled = true;
+
+    let error;
+    if (mode === 'signin') {
+      ({ error } = await sb.auth.signInWithPassword({ email, password }));
+    } else {
+      ({ error } = await sb.auth.signUp({ email, password }));
+    }
+
+    btn.disabled = false;
+    btn.textContent = mode === 'signin' ? 'Sign In' : 'Sign Up';
+
+    if (error) {
+      errEl.textContent = error.message;
+      errEl.style.display = 'block';
+    } else {
+      if (mode === 'signup') {
+        errEl.style.color = 'var(--accent-grip-text)';
+        errEl.textContent = 'Check your email to confirm your account, then sign in.';
+        errEl.style.display = 'block';
+      } else {
+        window.location.href = 'workout.html';
+      }
+    }
+  }
+
+  // Allow Enter key to submit
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleAuth();
+  });
+
+  // Apply saved theme
+  const themes = ['dark','light','purple','blue','red'];
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+  applyTheme(localStorage.getItem('theme') || 'dark');
+</script>
+</body>
+</html>

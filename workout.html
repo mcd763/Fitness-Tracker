@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workout Plan</title>
+  <link rel="stylesheet" href="workout.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js"></script>
+</head>
+<body>
+
+  <div class="page">
+
+    <nav style="
+  display: flex;
+  gap: 10px;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 1rem;
+">
+  <a href="workout.html" style="
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-fire-text);
+    text-decoration: none;
+    padding: 5px 12px;
+    border: 1px solid var(--accent-fire);
+    border-radius: var(--radius-tag);
+    background: var(--accent-fire-bg);
+  ">Plan</a>
+  <a href="log.html" style="
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 5px 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-tag);
+  ">→ Log</a>
+
+  <a href="summary.html" style="
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 5px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-tag);
+">Summary</a>
+
+<button id="theme-toggle" onclick="toggleTheme()" style="
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: var(--radius-tag);
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+">Light</button>
+
+<a href="login.html" style="
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  padding: 5px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-tag);
+">Sign out</a>
+</nav>
+
+    <header class="page-header">
+      <h1>Training Plan</h1>
+      
+    </header>
+
+    <!-- WEEKLY MINIMUMS -->
+    <div class="card">
+      <p class="section-label">Weekly minimums — any days, any order</p>
+
+      <div class="priority-row">
+        <span class="priority-num">1</span>
+        <div>
+          <p class="priority-text">Upper day + Lower day</p>
+          <p class="priority-sub">Non-negotiable. At least one rest day between them.</p>
+        </div>
+      </div>
+
+      <div class="priority-row">
+        <span class="priority-num">2</span>
+        <div>
+          <p class="priority-text">Stairs or sandbag session</p>
+          <p class="priority-sub">When home alone only. 30–60 min. Pack test prep.</p>
+        </div>
+      </div>
+
+      <div class="priority-row">
+        <span class="priority-num">3</span>
+        <div>
+          <p class="priority-text">1 run</p>
+          <p class="priority-sub">Easy pace, don't push distance yet. Add ~0.25mi every 2 weeks.</p>
+        </div>
+      </div>
+
+      <div class="priority-row">
+        <span class="priority-num">4</span>
+        <div>
+          <p class="priority-text">Pull-ups every time you pass the bar</p>
+          <p class="priority-sub">Not a session. Just reps of opportunity. Every. Single. Time.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPPER + LOWER GRID -->
+    <div class="grid2">
+
+      <div class="card">
+        <p class="section-label">Upper day</p>
+        <div class="ex-row">
+          <span class="ex-name">Bench press</span>
+          <span class="ex-detail">4×8–10</span>
+        </div>
+        <div class="ex-row">
+          <span class="ex-name">Seated OHP</span>
+          <span class="ex-detail">4×6–8</span>
+        </div>
+        <div class="ex-row">
+          <span class="ex-name">Bent over row</span>
+          <span class="ex-detail">4×6–8, use straps</span>
+        </div>
+        <div class="ex-row">
+          <span class="ex-name">Bicep curl</span>
+          <span class="ex-detail">3×10, one weight</span>
+        </div>
+        <div class="ex-row">
+          <span class="ex-name">Dead hang</span>
+          <span class="ex-detail">3×max, grip work</span>
+        </div>
+        <div class="ex-row">
+          <span class="ex-name">
+            Band pull-aparts
+            <span class="tag tag-grip">when found</span>
+          </span>
+          <span class="ex-detail">3×15</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="section-label">Lower day</p>
+        <div class="ex-row">
+          <span class="ex-name">Squat</span>
+          <span class="ex-detail">4×10</span>
+        </div>
+        <div class="ex-row">
+          <span class="ex-name">Romanian deadlift</span>
+          <span class="ex-detail">4×8, use straps</span>
+        </div>
+        <div class="ex-row">
+          <span class="ex-name">Leg extension</span>
+          <span class="ex-detail">4×10, one weight</span>
+        </div>
+        <div class="ex-row">
+          <span class="ex-name">Lunge</span>
+          <span class="ex-detail">3×10 each side</span>
+        </div>
+        <div class="ex-row">
+          <span class="ex-name">Step-ups</span>
+          <span class="ex-detail">3×10 each, add load</span>
+        </div>
+        <div class="ex-row">
+          <span class="ex-name">Good mornings</span>
+          <span class="ex-detail">2×10, light only</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- HOME ALONE SESSIONS -->
+    <div class="card">
+      <p class="section-label">Home alone sessions — priority order</p>
+
+      <div class="ex-row">
+        <span class="ex-name">
+          Stair climb with 50lb pack
+          <span class="tag tag-fire">pack test</span>
+        </span>
+        <span class="ex-detail">30–90 min</span>
+      </div>
+      <div class="ex-row">
+        <span class="ex-name">
+          Sandbag lunges
+          <span class="tag tag-fire">pack test</span>
+        </span>
+        <span class="ex-detail">3×10 each, 100lb</span>
+      </div>
+      <div class="ex-row">
+        <span class="ex-name">
+          Sandbag bear hug carry
+          <span class="tag tag-fire">pack test</span>
+        </span>
+        <span class="ex-detail">3×30–60 sec</span>
+      </div>
+      <div class="ex-row">
+        <span class="ex-name">
+          Sandbag shouldering
+          <span class="tag tag-fire">pack test</span>
+        </span>
+        <span class="ex-detail">3×5 each side</span>
+      </div>
+      <div class="ex-row">
+        <span class="ex-name">
+          EZ bar axe work
+          <span class="tag tag-fire">job specific</span>
+        </span>
+        <span class="ex-detail">3×15 each pattern</span>
+      </div>
+      <div class="ex-row">
+        <span class="ex-name">Don't do stairs + lower day back to back</span>
+        <span class="ex-detail recovery-note">recovery rule</span>
+      </div>
+    </div>
+
+    <!-- RUNNING PROGRESSION -->
+    <div class="card">
+      <p class="section-label">Running progression</p>
+
+      <div class="ex-row">
+        <span class="ex-name">Now → Apr 1</span>
+        <span class="ex-detail">1.25–1.5 mi, easy pace</span>
+      </div>
+      <div class="ex-row">
+        <span class="ex-name">Apr 1 → Apr 15</span>
+        <span class="ex-detail">1.75–2 mi, still easy</span>
+      </div>
+      <div class="ex-row">
+        <span class="ex-name">Apr 15 → May 1</span>
+        <span class="ex-detail">2.5–3 mi, one faster mile</span>
+      </div>
+      <div class="ex-row">
+        <span class="ex-name">Pace rule</span>
+        <span class="ex-detail">conversational only until Apr 15</span>
+      </div>
+      <div class="ex-row">
+        <span class="ex-name">Pack test practice</span>
+        <span class="ex-detail">one 3mi timed walk before May 1</span>
+      </div>
+    </div>
+
+    <!-- PULL-UP PROGRESSION -->
+    <div class="card">
+      <p class="section-label">Pull-up progression toward 10</p>
+
+      <div class="ex-row">
+        <span class="ex-name">Now → Apr 1</span>
+        <span class="ex-detail">Max reps every pass, multiple times daily</span>
+      </div>
+      <div class="ex-row">
+        <span class="ex-name">Apr 1 → May 1</span>
+        <span class="ex-detail">Add negatives — jump to top, lower slow</span>
+      </div>
+      <div class="ex-row">
+        <span class="ex-name">Dead hangs on upper day</span>
+        <span class="ex-detail">builds grip + shoulder stability</span>
+      </div>
+      <div class="ex-row">
+        <span class="ex-name">Goal timeline</span>
+        <span class="ex-detail">10 in a row realistic by Jul–Aug</span>
+      </div>
+    </div>
+
+    <!-- DAILY NON-NEGOTIABLES -->
+    <div class="card">
+      <p class="section-label">Daily non-negotiables</p>
+
+      <div class="rule-row"><span>Water</span> — 16.9oz with lemon, every day</div>
+      <div class="rule-row"><span>Protein</span> — one shake or clear whey, every day</div>
+      <div class="rule-row"><span>Eat mom's cooking</span> — sit down for it, don't skip it</div>
+      <div class="rule-row"><span>Pull-ups</span> — every time you pass the bar, no exceptions</div>
+    </div>
+
+  </div><!-- /.page -->
+  <script>
+  // Store planned exercises in localStorage so log.html can access them
+  const plannedExercises = [
+    // Upper Day
+    'Bench Press', 'Seated OHP', 'Bent Over Row', 'Bicep Curl', 'Dead Hang', 'Band Pull-Aparts',
+    // Lower Day
+    'Squat', 'Romanian Deadlift', 'Leg Extension', 'Lunge', 'Step-Ups', 'Good Mornings',
+    // Home Alone
+    'Stair Climb', 'Sandbag Lunges', 'Sandbag Bear Hug Carry', 'Sandbag Shouldering', 'EZ Bar Axe Work',
+    // Pull-ups
+    'Pull-Ups', 'Dead Hang', 'Negative Pull-Ups',
+  ];
+  localStorage.setItem('planned-exercises', JSON.stringify(plannedExercises));
+</script>
+
+<nav style="
+  display: flex;
+  gap: 10px;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 1rem;
+">
+  <a href="workout.html" style="
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-fire-text);
+    text-decoration: none;
+    padding: 5px 12px;
+    border: 1px solid var(--accent-fire);
+    border-radius: var(--radius-tag);
+    background: var(--accent-fire-bg);
+  ">Plan</a>
+  <a href="log.html" style="
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 5px 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-tag);
+  ">→ Log</a>
+
+  <a href="summary.html" style="
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 5px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-tag);
+">Summary</a>
+
+<button id="theme-toggle" onclick="toggleTheme()" style="
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: var(--radius-tag);
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+">Light</button>
+
+</nav>
+
+<script>
+  const themes = ['dark', 'light', 'purple', 'blue', 'red'];
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = themes[(themes.indexOf(theme) + 1) % themes.length];
+  }
+
+  function toggleTheme() {
+    const current = localStorage.getItem('theme') || 'dark';
+    const next = themes[(themes.indexOf(current) + 1) % themes.length];
+    applyTheme(next);
+  }
+
+  applyTheme(localStorage.getItem('theme') || 'dark');
+</script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+/* ============================================================
+   WORKOUT TRACKER — Dark Industrial Theme
+   ============================================================ */
+
+/* --- COLOR TOKENS (edit here to retheme everything) --- */
+:root {
+  --bg-page:           #111210;
+  --bg-card:           #1a1c19;
+  --bg-card-alt:       #1f211e;
+
+  --border-primary:    #2e3029;
+  --border-accent:     #3d4038;
+
+  --text-primary:      #e8e6df;
+  --text-secondary:    #8a897f;
+  --text-tertiary:     #555650;
+  --text-label:        #6b6d5e;
+
+  --accent-fire:       #c0440f;
+  --accent-fire-bg:    #2a1208;
+  --accent-fire-text:  #e8855a;
+
+  --accent-pack:       #7a6120;
+  --accent-pack-bg:    #231c07;
+  --accent-pack-text:  #d4aa4a;
+
+  --accent-grip:       #2d5a1b;
+  --accent-grip-bg:    #0e1e09;
+  --accent-grip-text:  #74b84e;
+
+  --num-color:         #3d4038;
+
+  --radius-card:       6px;
+  --radius-tag:        3px;
+
+  --font-display:      'Oswald', sans-serif;
+  --font-body:         'IBM Plex Mono', monospace;
+}
+
+[data-theme="light"] {
+  --bg-page:           #cdcfb8;
+  --bg-card:           #d0d1c8;
+  --bg-card-alt:       #c0c1b8;
+
+  --border-primary:    #a8a99f;
+  --border-accent:     #989990;
+
+  --text-primary:      #1a1c18;
+  --text-secondary:    #3a3d35;
+  --text-tertiary:     #606358;
+  --text-label:        #505548;
+
+  --accent-fire:       #a03000;
+  --accent-fire-bg:    #c8bfb0;
+  --accent-fire-text:  #6a2000;
+
+  --accent-pack:       #5a4810;
+  --accent-pack-bg:    #c8c4a8;
+  --accent-pack-text:  #3a2c00;
+
+  --accent-grip:       #285018;
+  --accent-grip-bg:    #b0c8a8;
+  --accent-grip-text:  #182c0c;
+
+  --num-color:         #a0a198;
+}
+
+[data-theme="purple"] {
+  --bg-page:           #c8b8d4;
+  --bg-card:           #d0c0d8;
+  --bg-card-alt:       #c0b0c8;
+
+  --border-primary:    #a898b8;
+  --border-accent:     #9888a8;
+
+  --text-primary:      #181c1c;
+  --text-secondary:    #353840;
+  --text-tertiary:     #585868;
+  --text-label:        #484858;
+
+  --accent-fire:       #600080;
+  --accent-fire-bg:    #c0b0cc;
+  --accent-fire-text:  #400060;
+
+  --accent-pack:       #483080;
+  --accent-pack-bg:    #b8b0cc;
+  --accent-pack-text:  #281860;
+
+  --accent-grip:       #382878;
+  --accent-grip-bg:    #b0a8c8;
+  --accent-grip-text:  #180c50;
+
+  --num-color:         #a898b8;
+}
+
+[data-theme="blue"] {
+  --bg-page:           #161c24;
+  --bg-card:           #1c2430;
+  --bg-card-alt:       #182028;
+
+  --border-primary:    #263040;
+  --border-accent:     #304050;
+
+  --text-primary:      #d0e0f0;
+  --text-secondary:    #7090b0;
+  --text-tertiary:     #445870;
+  --text-label:        #506880;
+
+  --accent-fire:       #2060c0;
+  --accent-fire-bg:    #101828;
+  --accent-fire-text:  #60a0e8;
+
+  --accent-pack:       #187080;
+  --accent-pack-bg:    #0c2028;
+  --accent-pack-text:  #40c0d8;
+
+  --accent-grip:       #186890;
+  --accent-grip-bg:    #0c1c28;
+  --accent-grip-text:  #40a8d0;
+
+  --num-color:         #304050;
+}
+
+[data-theme="red"] {
+  --bg-page:           #d4b8b8;
+  --bg-card:           #d8c0c0;
+  --bg-card-alt:       #c8b0b0;
+
+  --border-primary:    #b89898;
+  --border-accent:     #a88888;
+
+  --text-primary:      #1c1818;
+  --text-secondary:    #3d3535;
+  --text-tertiary:     #635858;
+  --text-label:        #554848;
+
+  --accent-fire:       #900000;
+  --accent-fire-bg:    #c8b0b0;
+  --accent-fire-text:  #600000;
+
+  --accent-pack:       #6a3010;
+  --accent-pack-bg:    #c8b8a8;
+  --accent-pack-text:  #3a1800;
+
+  --accent-grip:       #582018;
+  --accent-grip-bg:    #c0a8a8;
+  --accent-grip-text:  #300808;
+
+  --num-color:         #a89898;
+}
+
+/* --- RESET & BASE --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+  padding: 2rem 1.25rem 4rem;
+}
+
+/* --- GOOGLE FONTS IMPORT --- */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+/* --- PAGE WRAPPER --- */
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* --- PAGE HEADER --- */
+.page-header {
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.page-header p {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
+
+/* --- CARDS --- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-card);
+  padding: 18px 20px;
+  margin-bottom: 12px;
+}
+
+.card + .card {
+  margin-top: 0;
+}
+
+/* --- SECTION LABEL --- */
+.section-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-label);
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+/* --- PRIORITY ROWS (Weekly Minimums) --- */
+.priority-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.priority-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.priority-row:first-of-type {
+  padding-top: 0;
+}
+
+.priority-num {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--num-color);
+  width: 20px;
+  flex-shrink: 0;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+.priority-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.priority-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* --- TWO-COLUMN GRID --- */
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* --- EXERCISE ROWS --- */
+.ex-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-primary);
+  gap: 12px;
+}
+
+.ex-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.ex-row:first-of-type {
+  padding-top: 0;
+}
+
+.ex-name {
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.ex-detail {
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* --- TAGS --- */
+.tag {
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: var(--radius-tag);
+  margin-left: 6px;
+  vertical-align: middle;
+  display: inline-block;
+  line-height: 1.4;
+}
+
+.tag-fire {
+  background: var(--accent-fire-bg);
+  color: var(--accent-fire-text);
+  border: 1px solid var(--accent-fire);
+}
+
+.tag-pack {
+  background: var(--accent-pack-bg);
+  color: var(--accent-pack-text);
+  border: 1px solid var(--accent-pack);
+}
+
+.tag-grip {
+  background: var(--accent-grip-bg);
+  color: var(--accent-grip-text);
+  border: 1px solid var(--accent-grip);
+}
+
+/* --- RULE ROWS (Daily Non-Negotiables) --- */
+.rule-row {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-primary);
+  line-height: 1.5;
+}
+
+.rule-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.rule-row:first-of-type {
+  padding-top: 0;
+}
+
+.rule-row span {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* --- RECOVERY NOTE --- */
+.recovery-note {
+  font-size: 11px;
+  color: var(--accent-pack-text);
+  background: var(--accent-pack-bg);
+  border: 1px solid var(--accent-pack);
+  border-radius: var(--radius-tag);
+  padding: 6px 10px;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 580px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  body {
+    padding: 1.25rem 1rem 3rem;
+  }
+}
+
+/* --- AUTOCOMPLETE --- */
+.autocomplete-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.autocomplete-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 999;
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-card);
+  min-width: 200px;
+  max-height: 180px;
+  overflow-y: auto;
+  margin-top: 3px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.autocomplete-item {
+  padding: 7px 12px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.active {
+  background: var(--bg-page);
+  color: var(--text-primary);
+}

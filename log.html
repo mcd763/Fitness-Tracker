@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training Log — Mar 13 to May 1</title>
+  <link rel="stylesheet" href="workout.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js"></script>
+</head>
+<body>
+
+  <div class="page">
+
+    <!-- NAV -->
+    <nav style="
+      display: flex;
+      gap: 10px;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-primary);
+      padding-bottom: 1rem;
+    ">
+      <a href="workout.html" style="
+        font-family: var(--font-display);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        text-decoration: none;
+        padding: 5px 12px;
+        border: 1px solid var(--border-primary);
+        border-radius: var(--radius-tag);
+      ">← Plan</a>
+      <a href="log.html" style="
+        font-family: var(--font-display);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent-fire-text);
+        text-decoration: none;
+        padding: 5px 12px;
+        border: 1px solid var(--accent-fire);
+        border-radius: var(--radius-tag);
+        background: var(--accent-fire-bg);
+      ">Log</a>
+
+      <a href="summary.html" style="
+        font-family: var(--font-display);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        text-decoration: none;
+        padding: 5px 12px;
+        border: 1px solid var(--border-primary);
+        border-radius: var(--radius-tag);
+      ">Summary</a>
+
+      <button id="theme-toggle" onclick="toggleTheme()" style="
+        margin-left: auto;
+        font-family: var(--font-display);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: var(--radius-tag);
+        cursor: pointer;
+        background: none;
+        border: 1px solid var(--border-primary);
+        color: var(--text-secondary);
+      ">Light</button>
+
+      <button onclick="signOut()" style="
+        font-family: var(--font-display);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: var(--radius-tag);
+        cursor: pointer;
+        background: none;
+        border: 1px solid var(--border-primary);
+        color: var(--text-tertiary);
+      ">Sign out</button>
+    </nav>
+
+    <!-- HEADER -->
+    <header class="page-header">
+      <h1>Training Log</h1>
+      <p>Mar 13 – May 1 &nbsp;·&nbsp; <span id="days-left"></span></p>
+    </header>
+
+    <!-- PROGRESS BAR -->
+    <div class="card" style="margin-bottom: 12px;">
+      <p class="section-label">6-Week Progress</p>
+      <div style="
+        background: var(--bg-card-alt);
+        border: 1px solid var(--border-primary);
+        border-radius: 3px;
+        height: 8px;
+        margin-bottom: 8px;
+        overflow: hidden;
+      ">
+        <div id="progress-bar" style="
+          height: 100%;
+          background: var(--accent-fire);
+          border-radius: 3px;
+          transition: width 0.4s ease;
+          width: 0%;
+        "></div>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span style="font-size: 11px; color: var(--text-tertiary);">Mar 13</span>
+        <span id="progress-pct" style="font-size: 11px; color: var(--text-secondary);"></span>
+        <span style="font-size: 11px; color: var(--text-tertiary);">May 1</span>
+      </div>
+    </div>
+
+    <!-- WEEKLY SUMMARY -->
+    <div class="card">
+      <p class="section-label">This week</p>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <div id="week-upper"  style="font-size:11px; padding:4px 10px; border-radius:var(--radius-tag); border:1px solid var(--border-primary); color:var(--text-tertiary);">Upper ✗</div>
+        <div id="week-lower"  style="font-size:11px; padding:4px 10px; border-radius:var(--radius-tag); border:1px solid var(--border-primary); color:var(--text-tertiary);">Lower ✗</div>
+        <div id="week-stairs" style="font-size:11px; padding:4px 10px; border-radius:var(--radius-tag); border:1px solid var(--border-primary); color:var(--text-tertiary);">Stairs/Sandbag ✗</div>
+        <div id="week-run"    style="font-size:11px; padding:4px 10px; border-radius:var(--radius-tag); border:1px solid var(--border-primary); color:var(--text-tertiary);">Run/Ruck ✗</div>
+      </div>
+    </div>
+
+    <!-- GTG PULL-UPS -->
+<!-- GTG -->
+<div class="card">
+  <p class="section-label">Grease the Groove</p>
+
+  <!-- Tab toggle -->
+  <div style="display:flex; gap:6px; margin-bottom:14px;">
+    <button id="gtg-tab-pullup" onclick="setGTGTab('pullup')" style="
+      font-family:var(--font-display); font-size:10px; font-weight:600;
+      letter-spacing:0.08em; text-transform:uppercase; padding:4px 12px;
+      border-radius:var(--radius-tag); cursor:pointer;
+      background:var(--accent-grip-bg); border:1px solid var(--accent-grip);
+      color:var(--accent-grip-text);
+    ">Pull-ups</button>
+    <button id="gtg-tab-pushup" onclick="setGTGTab('pushup')" style="
+      font-family:var(--font-display); font-size:10px; font-weight:600;
+      letter-spacing:0.08em; text-transform:uppercase; padding:4px 12px;
+      border-radius:var(--radius-tag); cursor:pointer;
+      background:none; border:1px solid var(--border-primary);
+      color:var(--text-tertiary);
+    ">Push-ups</button>
+  </div>
+
+  <!-- PULL-UP PANEL -->
+  <div id="gtg-panel-pullup">
+    <div style="margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+        <span style="font-size:11px; color:var(--text-secondary);">Today's total</span>
+        <span id="gtg-today-total" style="font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--text-primary);">0</span>
+      </div>
+      <div style="background:var(--bg-card-alt); border:1px solid var(--border-primary); border-radius:3px; height:6px; overflow:hidden; margin-bottom:4px;">
+        <div id="gtg-progress-bar" style="height:100%; background:var(--accent-grip); border-radius:3px; transition:width 0.3s ease; width:0%;"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span style="font-size:10px; color:var(--text-tertiary);">0</span>
+        <span style="font-size:10px; color:var(--text-tertiary);">Goal: <span id="gtg-goal-display">15</span> reps</span>
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px;">
+      <input type="number" id="gtg-reps" placeholder="Reps" min="1" style="
+        background:var(--bg-card-alt); border:1px solid var(--border-accent);
+        border-radius:var(--radius-tag); color:var(--text-primary);
+        font-family:var(--font-body); font-size:12px; padding:6px 10px; width:80px;
+      "/>
+      <select id="gtg-grip" style="
+        background:var(--bg-card-alt); border:1px solid var(--border-accent);
+        border-radius:var(--radius-tag); color:var(--text-primary);
+        font-family:var(--font-body); font-size:12px; padding:6px 10px;
+      ">
+        <option value="overhand">Overhand</option>
+        <option value="neutral">Neutral</option>
+        <option value="underhand">Underhand</option>
+        <option value="mixed">Mixed</option>
+      </select>
+      <button onclick="logGTG('pullup')" style="
+        background:var(--accent-grip-bg); border:1px solid var(--accent-grip);
+        border-radius:var(--radius-tag); color:var(--accent-grip-text);
+        font-family:var(--font-display); font-size:11px; font-weight:600;
+        letter-spacing:0.08em; text-transform:uppercase; padding:6px 14px; cursor:pointer;
+      ">+ Log</button>
+      <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
+        <span style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-label);">Daily goal</span>
+        <input type="number" id="gtg-goal-input" value="15" min="1" style="
+          background:var(--bg-card-alt); border:1px solid var(--border-accent);
+          border-radius:var(--radius-tag); color:var(--text-primary);
+          font-family:var(--font-body); font-size:12px; padding:4px 8px; width:60px;
+        " onchange="saveGTGGoal('pullup')"/>
+      </div>
+    </div>
+    <div id="gtg-today-entries"></div>
+    <div id="gtg-history"></div>
+  </div>
+
+  <!-- PUSH-UP PANEL -->
+  <div id="gtg-panel-pushup" style="display:none;">
+    <div style="margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+        <span style="font-size:11px; color:var(--text-secondary);">Today's total</span>
+        <span id="pgu-today-total" style="font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--text-primary);">0</span>
+      </div>
+      <div style="background:var(--bg-card-alt); border:1px solid var(--border-primary); border-radius:3px; height:6px; overflow:hidden; margin-bottom:4px;">
+        <div id="pgu-progress-bar" style="height:100%; background:var(--accent-pack); border-radius:3px; transition:width 0.3s ease; width:0%;"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span style="font-size:10px; color:var(--text-tertiary);">0</span>
+        <span style="font-size:10px; color:var(--text-tertiary);">Goal: <span id="pgu-goal-display">30</span> reps</span>
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px;">
+      <input type="number" id="pgu-reps" placeholder="Reps" min="1" style="
+        background:var(--bg-card-alt); border:1px solid var(--border-accent);
+        border-radius:var(--radius-tag); color:var(--text-primary);
+        font-family:var(--font-body); font-size:12px; padding:6px 10px; width:80px;
+      "/>
+      <select id="pgu-variant" style="
+        background:var(--bg-card-alt); border:1px solid var(--border-accent);
+        border-radius:var(--radius-tag); color:var(--text-primary);
+        font-family:var(--font-body); font-size:12px; padding:6px 10px;
+      ">
+        <option value="standard">Standard</option>
+        <option value="wide">Wide grip</option>
+        <option value="diamond">Diamond</option>
+        <option value="decline">Decline</option>
+        <option value="incline">Incline</option>
+      </select>
+      <button onclick="logGTG('pushup')" style="
+        background:var(--accent-pack-bg); border:1px solid var(--accent-pack);
+        border-radius:var(--radius-tag); color:var(--accent-pack-text);
+        font-family:var(--font-display); font-size:11px; font-weight:600;
+        letter-spacing:0.08em; text-transform:uppercase; padding:6px 14px; cursor:pointer;
+      ">+ Log</button>
+      <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
+        <span style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-label);">Daily goal</span>
+        <input type="number" id="pgu-goal-input" value="30" min="1" style="
+          background:var(--bg-card-alt); border:1px solid var(--border-accent);
+          border-radius:var(--radius-tag); color:var(--text-primary);
+          font-family:var(--font-body); font-size:12px; padding:4px 8px; width:60px;
+        " onchange="saveGTGGoal('pushup')"/>
+      </div>
+    </div>
+    <div id="pgu-today-entries"></div>
+    <div id="pgu-history"></div>
+  </div>
+
+</div>
+
+<!-- PROFILE -->
+<div class="card">
+  <p class="section-label">Profile</p>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-label);">Birthday</span>
+      <input type="date" id="profile-dob" style="
+        background:var(--bg-card-alt); border:1px solid var(--border-accent);
+        border-radius:var(--radius-tag); color:var(--text-primary);
+        font-family:var(--font-body); font-size:12px; padding:5px 9px;
+      " onchange="saveProfile()"/>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-label);">Age</span>
+      <span id="profile-age" style="font-size:13px; color:var(--text-primary); font-family:var(--font-body);">—</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-label);">Weight</span>
+      <span id="profile-latest-weight" style="font-size:13px; color:var(--text-primary); font-family:var(--font-body);">—</span>
+    </div>
+  </div>
+</div>
+
+<!-- WEIGH-INS -->
+<div class="card">
+  <p class="section-label">Weigh-ins</p>
+
+  <!-- Input -->
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px;">
+      <input type="date" id="weight-date" style="
+        background:var(--bg-card-alt); border:1px solid var(--border-accent);
+        border-radius:var(--radius-tag); color:var(--text-primary);
+        font-family:var(--font-body); font-size:12px; padding:6px 10px;
+      "/>
+      <input type="number" id="weight-value" placeholder="e.g. 113" step="0.1" style="
+        background:var(--bg-card-alt); border:1px solid var(--border-accent);
+        border-radius:var(--radius-tag); color:var(--text-primary);
+        font-family:var(--font-body); font-size:12px; padding:6px 10px; width:140px;
+      "/>
+      <input type="text" id="weight-notes" placeholder="Notes (optional)" style="
+        background:var(--bg-card-alt); border:1px solid var(--border-accent);
+        border-radius:var(--radius-tag); color:var(--text-primary);
+        font-family:var(--font-body); font-size:12px; padding:6px 10px; flex:1; min-width:140px;
+      "/>
+      <button onclick="addWeighIn()" style="
+        background:var(--accent-fire-bg); border:1px solid var(--accent-fire);
+        border-radius:var(--radius-tag); color:var(--accent-fire-text);
+        font-family:var(--font-display); font-size:11px; font-weight:600;
+        letter-spacing:0.08em; text-transform:uppercase; padding:6px 14px; cursor:pointer;
+      ">+ Log weight</button>
+    </div>
+
+    <!-- Entries -->
+    <div id="weighin-entries"></div>
+      <p id="weighin-empty" style="font-size:12px; color:var(--text-tertiary); padding:6px 0;">No weigh-ins logged yet.</p>
+    </div>
+
+    <!-- LOG INPUT -->
+    <div class="card">
+      <p class="section-label">Log a session</p>
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+        <span style="font-family:var(--font-display); font-size:10px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase; color:var(--text-label);">Weight unit</span>
+        <button id="unit-lbs" onclick="setUnit('lbs')" style="
+          font-family:var(--font-display); font-size:10px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase; padding:3px 10px;
+          border-radius:var(--radius-tag); cursor:pointer;
+          background:var(--accent-fire-bg); border:1px solid var(--accent-fire);
+          color:var(--accent-fire-text);
+        ">lbs</button>
+        <button id="unit-kg" onclick="setUnit('kg')" style="
+          font-family:var(--font-display); font-size:10px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase; padding:3px 10px;
+          border-radius:var(--radius-tag); cursor:pointer;
+          background:none; border:1px solid var(--border-primary);
+          color:var(--text-tertiary);
+        ">kg</button>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+        <input type="date" id="log-date" style="
+          background:var(--bg-card-alt); border:1px solid var(--border-accent);
+          border-radius:var(--radius-tag); color:var(--text-primary);
+          font-family:var(--font-body); font-size:12px; padding:6px 10px;
+        "/>
+        <select id="log-type" onchange="handleTypeChange()" style="
+          background:var(--bg-card-alt); border:1px solid var(--border-accent);
+          border-radius:var(--radius-tag); color:var(--text-primary);
+          font-family:var(--font-body); font-size:12px; padding:6px 10px;
+        ">
+          <option value="">-- Session type --</option>
+          <option value="Upper Day">Upper Day</option>
+          <option value="Lower Day">Lower Day</option>
+          <option value="Stairs">Stairs</option>
+          <option value="Sandbag">Sandbag</option>
+          <option value="Run">Run</option>
+          <option value="Ruck">Ruck</option>
+          <option value="Pull-ups">Pull-ups</option>
+          <option value="Other">Other</option>
+        </select>
+        <input type="text" id="log-duration" placeholder="Duration (e.g. 1h 20min)" style="
+          background:var(--bg-card-alt); border:1px solid var(--border-accent);
+          border-radius:var(--radius-tag); color:var(--text-primary);
+          font-family:var(--font-body); font-size:12px; padding:6px 10px; width:170px;
+        "/>
+        <input type="text" id="log-notes" placeholder="Session notes..." style="
+          background:var(--bg-card-alt); border:1px solid var(--border-accent);
+          border-radius:var(--radius-tag); color:var(--text-primary);
+          font-family:var(--font-body); font-size:12px; padding:6px 10px;
+          flex:1; min-width:150px;
+        "/>
+      </div>
+
+      <!-- Exercise builder -->
+      <div id="exercise-builder" style="
+        background:var(--bg-page);
+        border:1px solid var(--border-primary);
+        border-radius:var(--radius-card);
+        padding:12px 14px;
+        margin-bottom:10px;
+      ">
+        <p style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-label); margin-bottom:10px;">Exercises</p>
+
+        <!-- Staged list appears here -->
+        <div id="staged-exercises" style="margin-bottom:10px;"></div>
+
+        <!-- Input row -->
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
+          <div class="autocomplete-wrapper">
+            <input type="text" id="ex-name" placeholder="Exercise"
+              style="background:var(--bg-card-alt); border:1px solid var(--border-accent); border-radius:var(--radius-tag); color:var(--text-primary); font-family:var(--font-body); font-size:12px; padding:5px 9px; width:150px;"
+              oninput="showSuggestions('ex-name', 'ex-name-list')"
+              onkeydown="handleSuggestionKey(event, 'ex-name', 'ex-name-list')"
+            />
+            <div id="ex-name-list" class="autocomplete-list" style="display:none;"></div>
+          </div>
+          <input type="text" id="ex-sets"   placeholder="Sets"     style="background:var(--bg-card-alt); border:1px solid var(--border-accent); border-radius:var(--radius-tag); color:var(--text-primary); font-family:var(--font-body); font-size:12px; padding:5px 9px; width:60px;"
+            oninput="updateSetRows('new-session')" />
+          <input type="text" id="ex-reps"   placeholder="Reps"     style="background:var(--bg-card-alt); border:1px solid var(--border-accent); border-radius:var(--radius-tag); color:var(--text-primary); font-family:var(--font-body); font-size:12px; padding:5px 9px; width:70px;"/>
+          <input type="text" id="ex-weight" placeholder="Weight"   style="background:var(--bg-card-alt); border:1px solid var(--border-accent); border-radius:var(--radius-tag); color:var(--text-primary); font-family:var(--font-body); font-size:12px; padding:5px 9px; width:110px;"/>
+          <input type="text" id="ex-notes" placeholder="Exercise notes..." style="
+              background:var(--bg-card-alt); border:1px solid var(--border-accent);
+              border-radius:var(--radius-tag); color:var(--text-primary);
+              font-family:var(--font-body); font-size:12px; padding:5px 9px;
+              flex:1; min-width:140px;
+            "/>
+          <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+            <input type="checkbox" id="ex-vary" onchange="toggleVary('new-session')" style="accent-color:var(--accent-fire); cursor:pointer;"/>
+            <span style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-tertiary);">Sets vary?</span>
+          </label>
+          <button onclick="addExercise()" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-secondary);
+            font-family:var(--font-display); font-size:11px; font-weight:600;
+            letter-spacing:0.08em; text-transform:uppercase; padding:5px 12px; cursor:pointer;
+          ">+ Add</button>
+        </div>
+
+        <!-- Per-set rows when vary is toggled -->
+        <div id="vary-rows-new-session" style="display:none; margin-bottom:8px;"></div>
+      </div>
+
+      <!-- Run builder -->
+      <div id="run-builder" style="
+        display:none;
+        background:var(--bg-page);
+        border:1px solid var(--border-primary);
+        border-radius:var(--radius-card);
+        padding:12px 14px;
+        margin-bottom:10px;
+      ">
+        <p style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-label); margin-bottom:10px;">Run Details</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <input type="text" id="run-distance" placeholder="Distance (e.g. 1.5mi)" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px; width:170px;
+          "/>
+          <input type="text" id="run-pace" placeholder="Pace (e.g. 9:30/mi)" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px; width:160px;
+          "/>
+          <input type="text" id="run-feel" placeholder="How it felt (optional)" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px; flex:1; min-width:150px;
+          "/>
+        </div>
+      </div>
+
+      <!-- Ruck builder -->
+      <div id="ruck-builder" style="
+        display:none;
+        background:var(--bg-page);
+        border:1px solid var(--border-primary);
+        border-radius:var(--radius-card);
+        padding:12px 14px;
+        margin-bottom:10px;
+      ">
+        <p style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-label); margin-bottom:10px;">Ruck Details</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <input type="text" id="ruck-distance" placeholder="Distance (e.g. 3mi)" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px; width:150px;
+          "/>
+          <input type="text" id="ruck-weight" placeholder="Pack weight (e.g. 45lbs)" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px; width:160px;
+          "/>
+          <input type="text" id="ruck-pace" placeholder="Pace (e.g. 15:00/mi)" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px; width:150px;
+          "/>
+          <select id="ruck-terrain" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px;
+          ">
+            <option value="">Terrain</option>
+            <option value="flat">Flat</option>
+            <option value="hilly">Hilly</option>
+            <option value="mixed">Mixed</option>
+            <option value="sidewalk/street">Sidewalk/Street</option>
+          </select>
+          <input type="text" id="ruck-feel" placeholder="How it felt (optional)" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px;
+            flex:1; min-width:150px;
+          "/>
+        </div>
+      </div>
+
+
+      <!-- Stairs builder -->
+      <div id="stairs-builder" style="
+        display:none;
+        background:var(--bg-page);
+        border:1px solid var(--border-primary);
+        border-radius:var(--radius-card);
+        padding:12px 14px;
+        margin-bottom:10px;
+        ">
+        <p style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-label); margin-bottom:10px;">Stair Climb Details</p>
+
+        <!-- Row 1: Core stats -->
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
+          <input type="text" id="stairs-reps" placeholder="Total reps" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px; width:110px;
+          "/>
+          <input type="text" id="stairs-rpm" placeholder="Reps/min" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px; width:110px;
+          "/>
+          <input type="text" id="stairs-steps" placeholder="Steps/rep (e.g. 50)" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px; width:150px;
+          "/>
+          <input type="text" id="stairs-pack" placeholder="Pack weight (e.g. 50lbs)" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px; width:160px;
+          "/>
+          <select id="stairs-direction" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px;
+          ">
+            <option value="">Direction</option>
+            <option value="up-down">Up → Down</option>
+            <option value="down-up">Down → Up</option>
+          </select>
+        </div>
+
+        <!-- Row 2: Time/endurance -->
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
+          <input type="text" id="stairs-target" placeholder="Target duration (e.g. 60min)" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px; width:180px;
+          "/>
+          <select id="stairs-hit-target" style="
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px;
+          ">
+            <option value="">Hit target?</option>
+            <option value="hit">✓ Hit it</option>
+            <option value="exceeded">↑ Exceeded it</option>
+            <option value="short">✗ Stopped short</option>
+          </select>
+          <input type="text" id="stairs-short-reason" placeholder="Why stopped short..." style="
+            display:none;
+            background:var(--bg-card-alt); border:1px solid var(--border-accent);
+            border-radius:var(--radius-tag); color:var(--text-primary);
+            font-family:var(--font-body); font-size:12px; padding:5px 9px;
+            flex:1; min-width:150px;
+          "/>
+        </div>
+
+        <!-- Row 3: Pace drops -->
+        <div style="margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-family:var(--font-display); font-size:10px; font-weight:600;
+              letter-spacing:0.08em; text-transform:uppercase; color:var(--text-label);">Pace drops</span>
+            <button onclick="addPaceDrop()" style="
+              background:none; border:1px solid var(--border-accent);
+              border-radius:var(--radius-tag); color:var(--text-secondary);
+              font-family:var(--font-display); font-size:10px; font-weight:600;
+              letter-spacing:0.06em; text-transform:uppercase;
+              padding:3px 10px; cursor:pointer;
+            ">+ Add</button>
+          </div>
+          <div id="pace-drop-list" style="display:flex; flex-direction:column; gap:5px;"></div>
+        </div>
+
+        <!-- Row 4: Breaks -->
+        <div style="margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-family:var(--font-display); font-size:10px; font-weight:600;
+              letter-spacing:0.08em; text-transform:uppercase; color:var(--text-label);">Breaks</span>
+            <button onclick="addBreak()" style="
+              background:none; border:1px solid var(--border-accent);
+              border-radius:var(--radius-tag); color:var(--text-secondary);
+              font-family:var(--font-display); font-size:10px; font-weight:600;
+              letter-spacing:0.06em; text-transform:uppercase;
+              padding:3px 10px; cursor:pointer;
+            ">+ Add</button>
+          </div>
+          <div id="break-list" style="display:flex; flex-direction:column; gap:5px;"></div>
+        </div>
+
+        <!-- Row 5: Notes -->
+        <input type="text" id="stairs-notes" placeholder="General notes (optional)" style="
+          background:var(--bg-card-alt); border:1px solid var(--border-accent);
+          border-radius:var(--radius-tag); color:var(--text-primary);
+          font-family:var(--font-body); font-size:12px; padding:5px 9px;
+          width:100%;
+        "/>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end;">
+        <button onclick="addLog()" style="
+          background:var(--accent-fire-bg); border:1px solid var(--accent-fire);
+          border-radius:var(--radius-tag); color:var(--accent-fire-text);
+          font-family:var(--font-display); font-size:11px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase; padding:7px 18px; cursor:pointer;
+        ">+ Log session</button>
+      </div>
+    </div>
+
+
+    <!-- LOG ENTRIES -->
+    <div class="card">
+      <p class="section-label">Sessions — <span id="entry-count">0</span> logged</p>
+      <div id="log-entries"></div>
+      <p id="log-empty" style="font-size:12px; color:var(--text-tertiary); padding:6px 0;">No sessions logged yet. Get to work.</p>
+    </div>
+
+  </div>
+
+<script>
+  const START = new Date('2026-03-13');
+  const END   = new Date('2026-05-01');
+
+  let currentUser = null;
+  let entries     = [];
+  let weighins    = [];
+  let gtgLog      = [];
+  let pguLog      = [];
+  let profile     = {};
+  let weightUnit  = 'lbs';
+  let stagedExercises = [];
+
+  const inputCSS = `
+    background:var(--bg-card-alt);
+    border:1px solid var(--border-accent);
+    border-radius:var(--radius-tag);
+    color:var(--text-primary);
+    font-family:var(--font-body);
+    font-size:12px;
+    padding:4px 8px;
+  `;
+
+  // ── App init ──────────────────────────────────────────────
+  async function initApp() {
+    currentUser = await requireAuth();
+    if (!currentUser) return;
+
+    await migrateFromLocalStorage(currentUser.id);
+
+    entries  = await loadSessions(currentUser.id);
+    weighins = await loadWeighins(currentUser.id);
+
+    const gtgData = await loadGTG(currentUser.id);
+    gtgLog = gtgData.pullups;
+    pguLog = gtgData.pushups;
+
+    const prof = await loadProfile(currentUser.id);
+    profile = prof || {};
+
+    const prefs = await loadPreferences(currentUser.id);
+    weightUnit = prefs.weight_unit || 'lbs';
+
+    if (prefs.gtg_goal) localStorage.setItem('gtg-goal', prefs.gtg_goal);
+    if (prefs.pgu_goal) localStorage.setItem('pgu-goal', prefs.pgu_goal);
+
+    const todayLocal = new Date().toLocaleDateString('en-CA');
+    document.getElementById('log-date').value    = todayLocal;
+    document.getElementById('weight-date').value = todayLocal;
+
+    ['ex-name','ex-sets','ex-reps','ex-weight'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', ev => {
+        if (ev.key === 'Enter') addExercise();
+      });
+    });
+
+    updateProgress();
+    render();
+    renderProfile();
+    renderWeighins();
+    setUnit(weightUnit);
+    handleTypeChange();
+    renderGTGPanel('pullup');
+    renderGTGPanel('pushup');
+  }
+
+  // ── Format weight ─────────────────────────────────────────
+  function formatWeight(val) {
+    if (!val) return '';
+    if (/[a-zA-Z]/.test(val)) return val;
+    return val + weightUnit;
+  }
+
+  // ── Autocomplete ──────────────────────────────────────────
+  const plannedExercises = JSON.parse(localStorage.getItem('planned-exercises') || '[]');
+
+  function showSuggestions(inputId, listId) {
+    const input = document.getElementById(inputId);
+    const list  = document.getElementById(listId);
+    if (!input || !list) return;
+    const query = input.value.trim().toLowerCase();
+    list.innerHTML = '';
+    if (!query) { list.style.display = 'none'; return; }
+    const matches = plannedExercises.filter(e => e.toLowerCase().includes(query));
+    if (matches.length === 0) { list.style.display = 'none'; return; }
+    matches.forEach(match => {
+      const item = document.createElement('div');
+      item.className = 'autocomplete-item';
+      item.textContent = match;
+      item.addEventListener('mousedown', () => {
+        input.value = match;
+        list.style.display = 'none';
+        list.innerHTML = '';
+      });
+      list.appendChild(item);
+    });
+    list.style.display = 'block';
+  }
+
+  function handleSuggestionKey(e, inputId, listId) {
+    const list = document.getElementById(listId);
+    if (!list || list.style.display === 'none') {
+      if (e.key === 'Enter') addExercise();
+      return;
+    }
+    const items  = list.querySelectorAll('.autocomplete-item');
+    const active = list.querySelector('.autocomplete-item.active');
+    let idx = Array.from(items).indexOf(active);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      idx = idx < items.length - 1 ? idx + 1 : 0;
+      items.forEach(i => i.classList.remove('active'));
+      items[idx].classList.add('active');
+      items[idx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      idx = idx > 0 ? idx - 1 : items.length - 1;
+      items.forEach(i => i.classList.remove('active'));
+      items[idx].classList.add('active');
+      items[idx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      if (active) {
+        e.preventDefault();
+        document.getElementById(inputId).value = active.textContent;
+        list.style.display = 'none';
+        list.innerHTML = '';
+      } else { addExercise(); }
+    } else if (e.key === 'Escape') {
+      list.style.display = 'none';
+      list.innerHTML = '';
+    }
+  }
+
+  document.addEventListener('click', (e) => {
+    document.querySelectorAll('.autocomplete-list').forEach(list => {
+      if (!list.closest('.autocomplete-wrapper')?.contains(e.target)) {
+        list.style.display = 'none';
+        list.innerHTML = '';
+      }
+    });
+  });
+
+  // ── Session type change ───────────────────────────────────
+  function handleTypeChange() {
+    const type          = document.getElementById('log-type').value;
+    const builder       = document.getElementById('exercise-builder');
+    const runBuilder    = document.getElementById('run-builder');
+    const stairsBuilder = document.getElementById('stairs-builder');
+    const ruckBuilder   = document.getElementById('ruck-builder');
+    builder.style.display       = 'block';
+    runBuilder.style.display    = 'none';
+    stairsBuilder.style.display = 'none';
+    ruckBuilder.style.display   = 'none';
+    if (type === 'Run')    { runBuilder.style.display    = 'block'; builder.style.display = 'none'; }
+    if (type === 'Stairs') { stairsBuilder.style.display = 'block'; builder.style.display = 'none'; }
+    if (type === 'Ruck')   { ruckBuilder.style.display   = 'block'; builder.style.display = 'none'; }
+  }
+
+  // ── Stair helpers ─────────────────────────────────────────
+  let stagedPaceDrops = [];
+  let stagedBreaks    = [];
+
+  document.addEventListener('change', function(e) {
+    if (e.target.id === 'stairs-hit-target') {
+      const reason = document.getElementById('stairs-short-reason');
+      if (reason) reason.style.display = e.target.value === 'short' ? 'block' : 'none';
+    }
+  });
+
+  function addPaceDrop() {
+    stagedPaceDrops.push({ id: Date.now() });
+    renderPaceDrops();
+  }
+  function removePaceDrop(id) {
+    stagedPaceDrops = stagedPaceDrops.filter(p => p.id !== id);
+    renderPaceDrops();
+  }
+  function renderPaceDrops() {
+    const container = document.getElementById('pace-drop-list');
+    if (!container) return;
+    container.innerHTML = '';
+    stagedPaceDrops.forEach(p => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; gap:8px; align-items:center;';
+      row.innerHTML = `
+        <input type="text" id="pd-min-${p.id}" placeholder="At min (e.g. 23)" style="${inputCSS} width:130px;"/>
+        <input type="text" id="pd-note-${p.id}" placeholder="What happened..." style="${inputCSS} flex:1;"/>
+        <button onclick="removePaceDrop(${p.id})" style="background:none; border:none; color:var(--text-tertiary); font-size:14px; cursor:pointer; padding:0 2px;">×</button>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  function addBreak() {
+    stagedBreaks.push({ id: Date.now() });
+    renderBreaks();
+  }
+  function removeBreak(id) {
+    stagedBreaks = stagedBreaks.filter(b => b.id !== id);
+    renderBreaks();
+  }
+  function renderBreaks() {
+    const container = document.getElementById('break-list');
+    if (!container) return;
+    container.innerHTML = '';
+    stagedBreaks.forEach(b => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; gap:8px; align-items:center;';
+      row.innerHTML = `
+        <input type="text" id="br-min-${b.id}" placeholder="At min (e.g. 18)" style="${inputCSS} width:130px;"/>
+        <input type="text" id="br-dur-${b.id}" placeholder="Duration (e.g. 3min)" style="${inputCSS} width:130px;"/>
+        <input type="text" id="br-note-${b.id}" placeholder="Reason (optional)" style="${inputCSS} flex:1;"/>
+        <button onclick="removeBreak(${b.id})" style="background:none; border:none; color:var(--text-tertiary); font-size:14px; cursor:pointer; padding:0 2px;">×</button>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  function collectStairsData() {
+    const paceDrops = stagedPaceDrops.map(p => ({
+      minute: document.getElementById(`pd-min-${p.id}`)?.value.trim() || '',
+      note:   document.getElementById(`pd-note-${p.id}`)?.value.trim() || '',
+    })).filter(p => p.minute || p.note);
+    const breaks = stagedBreaks.map(b => ({
+      minute:   document.getElementById(`br-min-${b.id}`)?.value.trim() || '',
+      duration: document.getElementById(`br-dur-${b.id}`)?.value.trim() || '',
+      reason:   document.getElementById(`br-note-${b.id}`)?.value.trim() || '',
+    })).filter(b => b.minute || b.duration);
+    return {
+      reps:        document.getElementById('stairs-reps').value.trim(),
+      rpm:         document.getElementById('stairs-rpm').value.trim(),
+      steps:       document.getElementById('stairs-steps').value.trim(),
+      pack:        document.getElementById('stairs-pack').value.trim(),
+      direction:   document.getElementById('stairs-direction').value,
+      target:      document.getElementById('stairs-target').value.trim(),
+      hitTarget:   document.getElementById('stairs-hit-target').value,
+      shortReason: document.getElementById('stairs-short-reason').value.trim(),
+      paceDrops, breaks,
+      notes:       document.getElementById('stairs-notes').value.trim(),
+    };
+  }
+
+  function clearStairsForm() {
+    ['stairs-reps','stairs-rpm','stairs-steps','stairs-pack',
+     'stairs-target','stairs-short-reason','stairs-notes'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('stairs-direction').value  = '';
+    document.getElementById('stairs-hit-target').value = '';
+    document.getElementById('stairs-short-reason').style.display = 'none';
+    document.getElementById('pace-drop-list').innerHTML = '';
+    document.getElementById('break-list').innerHTML = '';
+    stagedPaceDrops = [];
+    stagedBreaks    = [];
+  }
+
+  // ── Weight unit ───────────────────────────────────────────
+  function setUnit(u) {
+    weightUnit = u;
+    localStorage.setItem('weight-unit', u);
+    document.getElementById('unit-lbs').style.background  = u === 'lbs' ? 'var(--accent-fire-bg)' : 'none';
+    document.getElementById('unit-lbs').style.borderColor = u === 'lbs' ? 'var(--accent-fire)'    : 'var(--border-primary)';
+    document.getElementById('unit-lbs').style.color       = u === 'lbs' ? 'var(--accent-fire-text)' : 'var(--text-tertiary)';
+    document.getElementById('unit-kg').style.background   = u === 'kg'  ? 'var(--accent-fire-bg)' : 'none';
+    document.getElementById('unit-kg').style.borderColor  = u === 'kg'  ? 'var(--accent-fire)'    : 'var(--border-primary)';
+    document.getElementById('unit-kg').style.color        = u === 'kg'  ? 'var(--accent-fire-text)' : 'var(--text-tertiary)';
+    savePreferences(currentUser?.id, { weight_unit: u });
+  }
+
+  // ── Progress bar ──────────────────────────────────────────
+  function updateProgress() {
+    const today   = new Date();
+    const total   = END - START;
+    const elapsed = Math.min(Math.max(today - START, 0), total);
+    const pct     = Math.round((elapsed / total) * 100);
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('progress-pct').textContent = pct + '% through';
+    const daysLeft = Math.max(0, Math.ceil((END - today) / 86400000));
+    document.getElementById('days-left').textContent =
+      daysLeft > 0 ? daysLeft + ' days remaining' : 'Program complete';
+  }
+
+  // ── Week summary ──────────────────────────────────────────
+  function getWeekStart() {
+    const d = new Date();
+    d.setDate(d.getDate() - d.getDay());
+    d.setHours(0,0,0,0);
+    return d;
+  }
+
+  function updateWeekSummary() {
+    const weekStart = getWeekStart();
+    const types = entries
+      .filter(e => new Date(e.date + 'T00:00:00') >= weekStart)
+      .map(e => e.type);
+    function mark(id, match) {
+      const el  = document.getElementById(id);
+      const hit = types.some(t => match.includes(t));
+      el.style.color       = hit ? 'var(--accent-grip-text)' : 'var(--text-tertiary)';
+      el.style.borderColor = hit ? 'var(--accent-grip)'      : 'var(--border-primary)';
+      el.style.background  = hit ? 'var(--accent-grip-bg)'   : 'transparent';
+      el.textContent = el.textContent.replace(hit ? '✗' : '✓', hit ? '✓' : '✗');
+    }
+    mark('week-upper',  ['Upper Day']);
+    mark('week-lower',  ['Lower Day']);
+    mark('week-stairs', ['Stairs','Sandbag']);
+    mark('week-run',    ['Run','Ruck']);
+  }
+
+  function tagClass(type) {
+    if (['Upper Day','Lower Day'].includes(type)) return 'tag-grip';
+    if (['Stairs','Sandbag'].includes(type))      return 'tag-fire';
+    if (['Run','Ruck'].includes(type))            return 'tag-pack';
+    return 'tag-grip';
+  }
+
+  // ── Set rows ──────────────────────────────────────────────
+  function toggleVary(context) {
+    const isNew     = context === 'new-session';
+    const checkbox  = isNew ? document.getElementById('ex-vary') : document.getElementById(`new-ex-vary-${context.replace('session-','')}`);
+    const setsInput = isNew ? document.getElementById('ex-sets') : document.getElementById(`new-ex-sets-${context.replace('session-','')}`);
+    const repsInput = isNew ? document.getElementById('ex-reps') : document.getElementById(`new-ex-reps-${context.replace('session-','')}`);
+    const wgtInput  = isNew ? document.getElementById('ex-weight') : document.getElementById(`new-ex-weight-${context.replace('session-','')}`);
+    const varyDiv   = document.getElementById(`vary-rows-${context}`);
+    if (checkbox.checked) {
+      repsInput.style.display = 'none';
+      wgtInput.style.display  = 'none';
+      varyDiv.style.display   = 'block';
+      buildSetRows(context, parseInt(setsInput.value) || 0);
+    } else {
+      repsInput.style.display = '';
+      wgtInput.style.display  = '';
+      varyDiv.style.display   = 'none';
+      varyDiv.innerHTML       = '';
+    }
+  }
+
+  function updateSetRows(context) {
+    const isNew    = context === 'new-session';
+    const checkbox = isNew ? document.getElementById('ex-vary') : document.getElementById(`new-ex-vary-${context.replace('session-','')}`);
+    if (!checkbox || !checkbox.checked) return;
+    const setsInput = isNew ? document.getElementById('ex-sets') : document.getElementById(`new-ex-sets-${context.replace('session-','')}`);
+    buildSetRows(context, parseInt(setsInput.value) || 0);
+  }
+
+  function buildSetRows(context, count) {
+    const varyDiv = document.getElementById(`vary-rows-${context}`);
+    const existing = [];
+    varyDiv.querySelectorAll('.set-row').forEach(r => {
+      existing.push({ reps: r.querySelector('.set-reps').value, weight: r.querySelector('.set-weight').value });
+    });
+    varyDiv.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const row = document.createElement('div');
+      row.className = 'set-row';
+      row.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:5px;';
+      row.innerHTML = `
+        <span style="font-family:var(--font-display); font-size:10px; font-weight:600; color:var(--text-tertiary); letter-spacing:0.06em; width:38px;">SET ${i+1}</span>
+        <input class="set-reps"   type="text" placeholder="Reps"   value="${existing[i]?.reps   || ''}" style="${inputCSS} width:70px;"/>
+        <input class="set-weight" type="text" placeholder="e.g. 125lbs" value="${existing[i]?.weight || ''}" style="${inputCSS} width:110px;"/>
+      `;
+      varyDiv.appendChild(row);
+    }
+  }
+
+  // ── Collect exercise ──────────────────────────────────────
+  function collectExercise(context) {
+    const isNew    = context === 'new-session';
+    const idx      = isNew ? '' : context.replace('session-','');
+    const name     = isNew ? document.getElementById('ex-name').value.trim() : document.getElementById(`new-ex-name-${idx}`).value.trim();
+    const sets     = isNew ? document.getElementById('ex-sets').value.trim() : document.getElementById(`new-ex-sets-${idx}`).value.trim();
+    const checkbox = isNew ? document.getElementById('ex-vary') : document.getElementById(`new-ex-vary-${idx}`);
+    const varies   = checkbox && checkbox.checked;
+    if (!name) { alert('Enter an exercise name.'); return null; }
+    const notes = isNew ? document.getElementById('ex-notes').value.trim() : document.getElementById(`new-ex-notes-${idx}`)?.value.trim() || '';
+    let reps, weight, setData = null;
+    if (varies) {
+      const varyDiv = document.getElementById(`vary-rows-${context}`);
+      setData = Array.from(varyDiv.querySelectorAll('.set-row')).map((r, i) => ({
+        set: i + 1,
+        reps:   r.querySelector('.set-reps').value.trim(),
+        weight: formatWeight(r.querySelector('.set-weight').value.trim()),
+      }));
+      reps   = setData.map(s => s.reps   || '—').join(', ');
+      weight = setData.map(s => s.weight || '—').join(', ');
+    } else {
+      reps   = isNew ? document.getElementById('ex-reps').value.trim()   : document.getElementById(`new-ex-reps-${idx}`).value.trim();
+      weight = isNew ? document.getElementById('ex-weight').value.trim() : document.getElementById(`new-ex-weight-${idx}`).value.trim();
+    }
+    return { name, sets, reps, weight, varies, setData, notes };
+  }
+
+  function clearExForm(context) {
+    const isNew = context === 'new-session';
+    const idx   = isNew ? '' : context.replace('session-','');
+    if (isNew) {
+      ['ex-name','ex-sets','ex-reps','ex-weight','ex-notes'].forEach(id => document.getElementById(id).value = '');
+      const cb = document.getElementById('ex-vary');
+      cb.checked = false;
+      document.getElementById('ex-reps').style.display   = '';
+      document.getElementById('ex-weight').style.display = '';
+    } else {
+      [`new-ex-name-${idx}`,`new-ex-sets-${idx}`,`new-ex-reps-${idx}`,`new-ex-weight-${idx}`].forEach(id => document.getElementById(id).value = '');
+      const cb = document.getElementById(`new-ex-vary-${idx}`);
+      if (cb) cb.checked = false;
+      const r = document.getElementById(`new-ex-reps-${idx}`);
+      const w = document.getElementById(`new-ex-weight-${idx}`);
+      if (r) r.style.display = '';
+      if (w) w.style.display = '';
+    }
+    const varyDiv = document.getElementById(`vary-rows-${context}`);
+    if (varyDiv) { varyDiv.innerHTML = ''; varyDiv.style.display = 'none'; }
+  }
+
+  // ── Stage exercise ────────────────────────────────────────
+  function addExercise() {
+    const ex = collectExercise('new-session');
+    if (!ex) return;
+    stagedExercises.push(ex);
+    renderStaged();
+    clearExForm('new-session');
+    document.getElementById('ex-name').focus();
+  }
+
+  function removeStagedExercise(i) {
+    stagedExercises.splice(i, 1);
+    renderStaged();
+  }
+
+  function renderStaged() {
+    const container = document.getElementById('staged-exercises');
+    container.innerHTML = '';
+    stagedExercises.forEach((ex, i) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'padding:5px 0; border-bottom:1px solid var(--border-primary); font-size:12px;';
+      row.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="color:var(--text-primary); flex:1;">${ex.name}</span>
+          <span style="color:var(--text-secondary); font-size:11px;">${ex.sets ? ex.sets+' sets' : ''}</span>
+          <button onclick="removeStagedExercise(${i})" style="background:none; border:none; color:var(--text-tertiary); font-size:14px; cursor:pointer; padding:0 2px;">×</button>
+        </div>
+        ${ex.notes ? `<div style="font-size:11px; color:var(--text-tertiary); margin-top:2px; padding-left:2px;">📝 ${ex.notes}</div>` : ''}
+        ${ex.varies && ex.setData ? renderSetDataPreview(ex.setData) : `
+          <div style="font-size:11px; color:var(--text-secondary); margin-top:2px; padding-left:2px;">
+            ${ex.reps ? ex.reps+' reps' : ''}${ex.reps && ex.weight ? ' · ' : ''}${ex.weight || ''}
+          </div>`}
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  function renderSetDataPreview(setData) {
+    return setData.map(s => `
+      <div style="display:flex; gap:12px; font-size:11px; color:var(--text-secondary); padding:2px 0 0 4px;">
+        <span style="color:var(--text-tertiary); font-family:var(--font-display); font-size:10px; letter-spacing:0.06em;">SET ${s.set}</span>
+        <span>${s.reps ? s.reps+' reps' : ''}</span>
+        <span>${s.weight || ''}</span>
+      </div>`).join('');
+  }
+
+  // ── Add session ───────────────────────────────────────────
+  async function addLog() {
+    const date     = document.getElementById('log-date').value;
+    const type     = document.getElementById('log-type').value;
+    const duration = document.getElementById('log-duration').value.trim();
+    const notes    = document.getElementById('log-notes').value.trim();
+    if (!date || !type) { alert('Pick a date and session type.'); return; }
+
+    let runData = null, stairsData = null, ruckData = null;
+
+    if (type === 'Run') {
+      runData = {
+        distance: document.getElementById('run-distance').value.trim(),
+        pace:     document.getElementById('run-pace').value.trim(),
+        feel:     document.getElementById('run-feel').value.trim(),
+      };
+      document.getElementById('run-distance').value = '';
+      document.getElementById('run-pace').value     = '';
+      document.getElementById('run-feel').value     = '';
+    }
+    if (type === 'Stairs') {
+      stairsData = collectStairsData();
+      clearStairsForm();
+    }
+    if (type === 'Ruck') {
+      ruckData = {
+        distance: document.getElementById('ruck-distance').value.trim(),
+        weight:   document.getElementById('ruck-weight').value.trim(),
+        pace:     document.getElementById('ruck-pace').value.trim(),
+        terrain:  document.getElementById('ruck-terrain').value,
+        feel:     document.getElementById('ruck-feel').value.trim(),
+      };
+      document.getElementById('ruck-distance').value = '';
+      document.getElementById('ruck-weight').value   = '';
+      document.getElementById('ruck-pace').value     = '';
+      document.getElementById('ruck-terrain').value  = '';
+      document.getElementById('ruck-feel').value     = '';
+    }
+
+    const session = { date, type, duration, notes, exercises: [...stagedExercises], runData, stairsData, ruckData };
+    await saveSession(currentUser.id, session);
+    entries.push(session);
+    render();
+
+    document.getElementById('log-type').value     = '';
+    document.getElementById('log-duration').value = '';
+    document.getElementById('log-notes').value    = '';
+    stagedExercises = [];
+    renderStaged();
+    handleTypeChange();
+  }
+
+  // ── Add exercise to session ───────────────────────────────
+  function showAddExToSession(sessionIndex) {
+    const container = document.getElementById(`add-ex-form-${sessionIndex}`);
+    container.style.display = container.style.display === 'none' ? 'flex' : 'none';
+  }
+
+  async function addExToSession(sessionIndex) {
+    const ex = collectExercise(`session-${sessionIndex}`);
+    if (!ex) return;
+    if (!entries[sessionIndex].exercises) entries[sessionIndex].exercises = [];
+    entries[sessionIndex].exercises.push(ex);
+    await saveSession(currentUser.id, entries[sessionIndex]);
+    render();
+  }
+
+  // ── Delete ────────────────────────────────────────────────
+  async function deleteLog(index) {
+    if (confirm('Remove this session?')) {
+      const session = entries[index];
+      if (session.id) await deleteSession(session.id);
+      entries.splice(index, 1);
+      render();
+    }
+  }
+
+  async function deleteExercise(sessionIndex, exIndex) {
+    entries[sessionIndex].exercises.splice(exIndex, 1);
+    await saveSession(currentUser.id, entries[sessionIndex]);
+    render();
+  }
+
+  // ── Edit session ──────────────────────────────────────────
+  function editSession(index) {
+    const e      = entries[index];
+    const header = document.querySelector(`#session-${index} .session-header`);
+    header.innerHTML = `
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; width:100%;">
+        <input id="edit-date-${index}"     type="date" value="${e.date}"       style="${inputCSS}"/>
+        <select id="edit-type-${index}" style="${inputCSS}">
+          <option value="Upper Day" ${e.type==='Upper Day'?'selected':''}>Upper Day</option>
+          <option value="Lower Day" ${e.type==='Lower Day'?'selected':''}>Lower Day</option>
+          <option value="Stairs"    ${e.type==='Stairs'   ?'selected':''}>Stairs</option>
+          <option value="Sandbag"   ${e.type==='Sandbag'  ?'selected':''}>Sandbag</option>
+          <option value="Run"       ${e.type==='Run'      ?'selected':''}>Run</option>
+          <option value="Ruck"      ${e.type==='Ruck'     ?'selected':''}>Ruck</option>
+          <option value="Pull-ups"  ${e.type==='Pull-ups' ?'selected':''}>Pull-ups</option>
+        </select>
+        <input id="edit-duration-${index}" type="text" value="${e.duration||''}" placeholder="Duration" style="${inputCSS} width:130px;"/>
+        <input id="edit-notes-${index}"    type="text" value="${e.notes||''}"    placeholder="Notes"    style="${inputCSS} flex:1; min-width:120px;"/>
+        <button onclick="saveSessionEdits(${index})" style="
+          background:var(--accent-grip-bg); border:1px solid var(--accent-grip);
+          border-radius:var(--radius-tag); color:var(--accent-grip-text);
+          font-family:var(--font-display); font-size:10px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase; padding:4px 10px; cursor:pointer;
+        ">Save</button>
+        <button onclick="render()" style="
+          background:none; border:1px solid var(--border-primary);
+          border-radius:var(--radius-tag); color:var(--text-tertiary);
+          font-family:var(--font-display); font-size:10px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase; padding:4px 10px; cursor:pointer;
+        ">Cancel</button>
+      </div>`;
+  }
+
+  async function saveSessionEdits(index) {
+    entries[index].date     = document.getElementById(`edit-date-${index}`).value;
+    entries[index].type     = document.getElementById(`edit-type-${index}`).value;
+    entries[index].duration = document.getElementById(`edit-duration-${index}`).value.trim();
+    entries[index].notes    = document.getElementById(`edit-notes-${index}`).value.trim();
+    await saveSession(currentUser.id, entries[index]);
+    render();
+  }
+
+  // ── Edit exercise ─────────────────────────────────────────
+  function editExercise(sessionIndex, exIndex) {
+    const ex     = entries[sessionIndex].exercises[exIndex];
+    const row    = document.getElementById(`ex-${sessionIndex}-${exIndex}`);
+    const varies = ex.varies && ex.setData;
+    row.innerHTML = `
+      <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; width:100%; padding:4px 0;">
+        <input id="eex-name-${sessionIndex}-${exIndex}"   type="text" value="${ex.name}"       placeholder="Exercise" style="${inputCSS} flex:1; min-width:120px;"/>
+        <input id="eex-sets-${sessionIndex}-${exIndex}"   type="text" value="${ex.sets||''}"   placeholder="Sets"     style="${inputCSS} width:60px;" oninput="updateEditSetRows(${sessionIndex},${exIndex})"/>
+        <input id="eex-reps-${sessionIndex}-${exIndex}"   type="text" value="${ex.reps||''}"   placeholder="Reps"     style="${inputCSS} width:70px; ${varies?'display:none;':''}"/>
+        <input id="eex-weight-${sessionIndex}-${exIndex}" type="text" value="${ex.weight||''}" placeholder="Weight"   style="${inputCSS} width:100px; ${varies?'display:none;':''}"/>
+        <input id="eex-notes-${sessionIndex}-${exIndex}"  type="text" value="${ex.notes||''}"  placeholder="Exercise notes..." style="${inputCSS} flex:1; min-width:140px;"/>
+        <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+          <input type="checkbox" id="eex-vary-${sessionIndex}-${exIndex}" ${varies?'checked':''} onchange="toggleEditVary(${sessionIndex},${exIndex})" style="accent-color:var(--accent-fire); cursor:pointer;"/>
+          <span style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-tertiary);">Sets vary?</span>
+        </label>
+        <button onclick="saveExercise(${sessionIndex},${exIndex})" style="
+          background:var(--accent-grip-bg); border:1px solid var(--accent-grip);
+          border-radius:var(--radius-tag); color:var(--accent-grip-text);
+          font-family:var(--font-display); font-size:10px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase; padding:4px 10px; cursor:pointer;
+        ">Save</button>
+        <button onclick="render()" style="
+          background:none; border:1px solid var(--border-primary);
+          border-radius:var(--radius-tag); color:var(--text-tertiary);
+          font-family:var(--font-display); font-size:10px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase; padding:4px 10px; cursor:pointer;
+        ">Cancel</button>
+      </div>
+      <div id="edit-vary-rows-${sessionIndex}-${exIndex}" style="${varies?'':'display:none;'}"></div>
+    `;
+    if (varies) buildEditSetRows(sessionIndex, exIndex, ex.setData);
+  }
+
+  function toggleEditVary(sIdx, eIdx) {
+    const cb      = document.getElementById(`eex-vary-${sIdx}-${eIdx}`);
+    const reps    = document.getElementById(`eex-reps-${sIdx}-${eIdx}`);
+    const weight  = document.getElementById(`eex-weight-${sIdx}-${eIdx}`);
+    const varyDiv = document.getElementById(`edit-vary-rows-${sIdx}-${eIdx}`);
+    const sets    = parseInt(document.getElementById(`eex-sets-${sIdx}-${eIdx}`).value) || 0;
+    if (cb.checked) {
+      reps.style.display = 'none'; weight.style.display = 'none';
+      varyDiv.style.display = 'block';
+      buildEditSetRows(sIdx, eIdx, [], sets);
+    } else {
+      reps.style.display = ''; weight.style.display = '';
+      varyDiv.style.display = 'none'; varyDiv.innerHTML = '';
+    }
+  }
+
+  function updateEditSetRows(sIdx, eIdx) {
+    const cb = document.getElementById(`eex-vary-${sIdx}-${eIdx}`);
+    if (!cb || !cb.checked) return;
+    const sets = parseInt(document.getElementById(`eex-sets-${sIdx}-${eIdx}`).value) || 0;
+    buildEditSetRows(sIdx, eIdx, [], sets);
+  }
+
+  function buildEditSetRows(sIdx, eIdx, existingData, count) {
+    const varyDiv  = document.getElementById(`edit-vary-rows-${sIdx}-${eIdx}`);
+    const n        = count !== undefined ? count : (existingData ? existingData.length : 0);
+    const existing = existingData && existingData.length ? existingData : [];
+    const current  = [];
+    varyDiv.querySelectorAll('.set-row').forEach(r => {
+      current.push({ reps: r.querySelector('.set-reps').value, weight: r.querySelector('.set-weight').value });
+    });
+    varyDiv.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+      const val = current[i] || existing[i] || {};
+      const row = document.createElement('div');
+      row.className = 'set-row';
+      row.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:5px;';
+      row.innerHTML = `
+        <span style="font-family:var(--font-display); font-size:10px; font-weight:600; color:var(--text-tertiary); letter-spacing:0.06em; width:38px;">SET ${i+1}</span>
+        <input class="set-reps"   type="text" placeholder="Reps"   value="${val.reps   || ''}" style="${inputCSS} width:70px;"/>
+        <input class="set-weight" type="text" placeholder="e.g. 125lbs" value="${val.weight || ''}" style="${inputCSS} width:110px;"/>
+      `;
+      varyDiv.appendChild(row);
+    }
+  }
+
+  async function saveExercise(sessionIndex, exIndex) {
+    const cb     = document.getElementById(`eex-vary-${sessionIndex}-${exIndex}`);
+    const varies = cb && cb.checked;
+    const name   = document.getElementById(`eex-name-${sessionIndex}-${exIndex}`).value.trim();
+    const sets   = document.getElementById(`eex-sets-${sessionIndex}-${exIndex}`).value.trim();
+    let reps, weight, setData = null;
+    if (varies) {
+      const varyDiv = document.getElementById(`edit-vary-rows-${sessionIndex}-${exIndex}`);
+      setData = Array.from(varyDiv.querySelectorAll('.set-row')).map((r, i) => ({
+        set: i + 1,
+        reps:   r.querySelector('.set-reps').value.trim(),
+        weight: r.querySelector('.set-weight').value.trim(),
+      }));
+      reps   = setData.map(s => s.reps   || '—').join(', ');
+      weight = setData.map(s => s.weight || '—').join(', ');
+    } else {
+      reps   = document.getElementById(`eex-reps-${sessionIndex}-${exIndex}`).value.trim();
+      weight = document.getElementById(`eex-weight-${sessionIndex}-${exIndex}`).value.trim();
+    }
+    const exNotes = document.getElementById(`eex-notes-${sessionIndex}-${exIndex}`)?.value.trim() || '';
+    entries[sessionIndex].exercises[exIndex] = { name, sets, reps, weight, varies, setData, notes: exNotes };
+    await saveSession(currentUser.id, entries[sessionIndex]);
+    render();
+  }
+
+  // ── Render sessions ───────────────────────────────────────
+  function render() {
+    const container = document.getElementById('log-entries');
+    const empty     = document.getElementById('log-empty');
+    const count     = document.getElementById('entry-count');
+    container.innerHTML = '';
+    count.textContent = entries.length;
+
+    if (entries.length === 0) {
+      empty.style.display = 'block';
+      updateWeekSummary();
+      return;
+    }
+    empty.style.display = 'none';
+
+    [...entries].reverse().forEach((e, i) => {
+      const realIndex = entries.length - 1 - i;
+
+      let exHTML = '';
+      if (e.exercises && e.exercises.length > 0) {
+        const exRows = e.exercises.map((ex, xi) => {
+          let detailHTML = '';
+          if (ex.varies && ex.setData) {
+            detailHTML = ex.setData.map(s => `
+              <div style="display:flex; gap:12px; font-size:11px; color:var(--text-secondary); padding:1px 0 0 2px;">
+                <span style="color:var(--text-tertiary); font-family:var(--font-display); font-size:10px; letter-spacing:0.06em; width:38px;">SET ${s.set}</span>
+                <span>${s.reps ? s.reps+' reps' : ''}</span>
+                <span>${s.weight || ''}</span>
+              </div>`).join('');
+          } else {
+            const detail = [ex.sets?ex.sets+' sets':'', ex.reps?ex.reps+' reps':'', ex.weight?ex.weight:''].filter(Boolean).join(' · ');
+            detailHTML = `<span style="color:var(--text-secondary); font-size:11px;">${detail}</span>`;
+          }
+          return `
+            <div id="ex-${realIndex}-${xi}" style="padding:6px 0; border-bottom:1px solid var(--border-primary);">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:${ex.varies?'4px':'0'};">
+                <div style="flex:1;">
+                  <span style="color:var(--text-primary); font-size:12px;">${ex.name}</span>
+                  ${ex.notes ? `<div style="font-size:11px; color:var(--text-tertiary); margin-top:2px;">📝 ${ex.notes}</div>` : ''}
+                </div>
+                ${ex.varies ? `<span style="color:var(--text-tertiary); font-size:11px;">${ex.sets?ex.sets+' sets':''}</span>` : detailHTML}
+                <button onclick="editExercise(${realIndex},${xi})" style="background:none; border:none; color:var(--text-tertiary); font-size:11px; cursor:pointer; padding:0 3px;" title="Edit">✎</button>
+                <button onclick="deleteExercise(${realIndex},${xi})" style="background:none; border:none; color:var(--text-tertiary); font-size:14px; cursor:pointer; padding:0 2px; line-height:1;" title="Delete">×</button>
+              </div>
+              ${ex.varies ? `<div style="padding-left:4px;">${detailHTML}</div>` : ''}
+            </div>`;
+        }).join('');
+        exHTML = `<div style="margin-top:8px; background:var(--bg-page); border:1px solid var(--border-primary); border-radius:var(--radius-card); padding:8px 12px;">${exRows}</div>`;
+      }
+
+      let runHTML = '';
+      if (e.type === 'Run' && e.runData) {
+        const r = e.runData;
+        const bits = [r.distance?'📍 '+r.distance:'', r.pace?'⏱ '+r.pace:'', r.feel?'💬 '+r.feel:''].filter(Boolean).join('&nbsp;&nbsp;');
+        if (bits) runHTML = `<div style="margin-top:8px; padding:8px 12px; background:var(--bg-page); border:1px solid var(--border-primary); border-radius:var(--radius-card); font-size:11px; color:var(--text-secondary);">${bits}</div>`;
+      }
+
+      let stairsHTML = '';
+      if (e.type === 'Stairs' && e.stairsData) {
+        const s = e.stairsData;
+        const targetStatus = s.hitTarget==='hit'?'✓ Hit target':s.hitTarget==='exceeded'?'↑ Exceeded target':s.hitTarget==='short'?'✗ Stopped short':'';
+        const targetColor  = s.hitTarget==='short'?'var(--accent-fire-text)':'var(--accent-grip-text)';
+        const bits = [
+          s.reps?'🔁 '+s.reps+' reps':'', s.rpm?'⚡ '+s.rpm+'/min':'',
+          s.steps?'📐 '+s.steps+' steps/rep':'', s.pack?'🎒 '+s.pack:'',
+          s.direction?'↕ '+(s.direction==='up-down'?'Up → Down':'Down → Up'):'',
+          s.target?'🎯 target: '+s.target:'',
+        ].filter(Boolean).join('&nbsp;&nbsp;·&nbsp;&nbsp;');
+        const paceDropHTML = s.paceDrops?.map(p=>`<div style="font-size:11px; color:var(--text-secondary); padding:2px 0;">⬇ min ${p.minute}${p.note?' — '+p.note:''}</div>`).join('')||'';
+        const breaksHTML   = s.breaks?.map(b=>`<div style="font-size:11px; color:var(--text-secondary); padding:2px 0;">⏸ min ${b.minute}${b.duration?' · '+b.duration:''}${b.reason?' — '+b.reason:''}</div>`).join('')||'';
+        stairsHTML = `<div style="margin-top:8px; padding:8px 12px; background:var(--bg-page); border:1px solid var(--border-primary); border-radius:var(--radius-card); font-size:11px; color:var(--text-secondary); line-height:1.8;">
+          ${bits?`<div style="margin-bottom:4px;">${bits}</div>`:''}
+          ${targetStatus?`<div style="color:${targetColor}; font-weight:500; margin-bottom:4px;">${targetStatus}${s.shortReason?' — '+s.shortReason:''}</div>`:''}
+          ${paceDropHTML}${breaksHTML}
+          ${s.notes?`<div style="color:var(--text-tertiary); margin-top:4px;">📝 ${s.notes}</div>`:''}
+        </div>`;
+      }
+
+      let ruckHTML = '';
+      if (e.type === 'Ruck' && e.ruckData) {
+        const r = e.ruckData;
+        const bits = [r.distance?'📍 '+r.distance:'', r.weight?'🎒 '+r.weight:'', r.pace?'⏱ '+r.pace:'', r.terrain?'🏔 '+r.terrain:'', r.feel?'💬 '+r.feel:''].filter(Boolean).join('&nbsp;&nbsp;·&nbsp;&nbsp;');
+        if (bits) ruckHTML = `<div style="margin-top:8px; padding:8px 12px; background:var(--bg-page); border:1px solid var(--border-primary); border-radius:var(--radius-card); font-size:11px; color:var(--text-secondary); line-height:1.8;">${bits}</div>`;
+      }
+
+      const addExForm = `
+        <div id="add-ex-form-${realIndex}" style="display:none; flex-direction:column; gap:8px; margin-top:8px; padding:10px 12px; background:var(--bg-page); border:1px solid var(--border-primary); border-radius:var(--radius-card);">
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <div class="autocomplete-wrapper" style="flex:1; min-width:120px;">
+              <input id="new-ex-name-${realIndex}" type="text" placeholder="Exercise" style="${inputCSS} width:100%;"
+                oninput="showSuggestions('new-ex-name-${realIndex}','new-ex-name-list-${realIndex}')"
+                onkeydown="handleSuggestionKey(event,'new-ex-name-${realIndex}','new-ex-name-list-${realIndex}')"/>
+              <div id="new-ex-name-list-${realIndex}" class="autocomplete-list" style="display:none;"></div>
+            </div>
+            <input id="new-ex-sets-${realIndex}"   type="text" placeholder="Sets"   style="${inputCSS} width:60px;" oninput="updateSetRows('session-${realIndex}')"/>
+            <input id="new-ex-reps-${realIndex}"   type="text" placeholder="Reps"   style="${inputCSS} width:70px;"/>
+            <input id="new-ex-weight-${realIndex}" type="text" placeholder="Weight" style="${inputCSS} width:100px;"/>
+            <input id="new-ex-notes-${realIndex}"  type="text" placeholder="Exercise notes..." style="${inputCSS} flex:1; min-width:140px;"/>
+            <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+              <input type="checkbox" id="new-ex-vary-${realIndex}" onchange="toggleVary('session-${realIndex}')" style="accent-color:var(--accent-fire); cursor:pointer;"/>
+              <span style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-tertiary);">Sets vary?</span>
+            </label>
+            <button onclick="addExToSession(${realIndex})" style="
+              background:var(--accent-grip-bg); border:1px solid var(--accent-grip);
+              border-radius:var(--radius-tag); color:var(--accent-grip-text);
+              font-family:var(--font-display); font-size:10px; font-weight:600;
+              letter-spacing:0.08em; text-transform:uppercase; padding:4px 10px; cursor:pointer;
+            ">+ Add</button>
+          </div>
+          <div id="vary-rows-session-${realIndex}" style="display:none;"></div>
+        </div>`;
+
+      const meta = [e.duration?'⏱ '+e.duration:'', e.notes?'📝 '+e.notes:''].filter(Boolean).join('&nbsp;&nbsp;');
+
+      const card = document.createElement('div');
+      card.id = 'session-' + realIndex;
+      card.style.cssText = 'padding:10px 0; border-bottom:1px solid var(--border-primary);';
+      card.innerHTML = `
+        <div class="session-header" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span style="color:var(--text-tertiary); font-size:11px; min-width:88px; flex-shrink:0;">${e.date}</span>
+          <span class="tag ${tagClass(e.type)}" style="margin-left:0; flex-shrink:0;">${e.type}</span>
+          ${meta?`<span style="font-size:11px; color:var(--text-secondary); flex:1;">${meta}</span>`:'<span style="flex:1;"></span>'}
+          <button onclick="editSession(${realIndex})" style="background:none; border:none; color:var(--text-tertiary); font-size:11px; cursor:pointer; padding:0 4px;" title="Edit session">✎</button>
+          <button onclick="deleteLog(${realIndex})"   style="background:none; border:none; color:var(--text-tertiary); font-size:16px; cursor:pointer; padding:0 4px; line-height:1;" title="Delete session">×</button>
+        </div>
+        ${exHTML}${runHTML}${stairsHTML}${ruckHTML}
+        ${addExForm}
+        <button onclick="showAddExToSession(${realIndex})" style="
+          margin-top:8px; background:none; border:1px solid var(--border-primary);
+          border-radius:var(--radius-tag); color:var(--text-tertiary);
+          font-family:var(--font-display); font-size:10px; font-weight:600;
+          letter-spacing:0.08em; text-transform:uppercase; padding:3px 10px; cursor:pointer;
+        ">+ Add exercise</button>
+      `;
+      container.appendChild(card);
+    });
+
+    const cards = container.querySelectorAll('[id^="session-"]');
+    if (cards.length) cards[cards.length-1].style.borderBottom = 'none';
+    updateWeekSummary();
+  }
+
+  // ── Profile ───────────────────────────────────────────────
+  function calcAge(dob) {
+    if (!dob) return '—';
+    const today = new Date();
+    const b     = new Date(dob + 'T00:00:00');
+    let age = today.getFullYear() - b.getFullYear();
+    const m = today.getMonth() - b.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < b.getDate())) age--;
+    return age;
+  }
+
+  async function saveProfile() {
+    const dob = document.getElementById('profile-dob').value;
+    profile.dob = dob;
+    await saveProfileDB(currentUser.id, dob);
+    renderProfile();
+  }
+
+  function renderProfile() {
+    if (profile.dob) document.getElementById('profile-dob').value = profile.dob;
+    document.getElementById('profile-age').textContent = calcAge(profile.dob);
+    if (weighins.length > 0) {
+      const latest = [...weighins].sort((a,b) => new Date(b.date) - new Date(a.date))[0];
+      document.getElementById('profile-latest-weight').textContent = latest.weight + ' lbs';
+    } else {
+      document.getElementById('profile-latest-weight').textContent = '—';
+    }
+  }
+
+  // ── Weigh-ins ─────────────────────────────────────────────
+  async function addWeighIn() {
+    const date   = document.getElementById('weight-date').value;
+    const weight = document.getElementById('weight-value').value.trim();
+    const notes  = document.getElementById('weight-notes').value.trim();
+    if (!date || !weight) { alert('Enter a date and weight.'); return; }
+    const entry = { date, weight: parseFloat(weight), notes };
+    await saveWeighin(currentUser.id, entry);
+    weighins.push(entry);
+    renderWeighins();
+    renderProfile();
+    document.getElementById('weight-value').value = '';
+    document.getElementById('weight-notes').value = '';
+  }
+
+  async function deleteWeighIn(index) {
+    if (confirm('Remove this weigh-in?')) {
+      const entry = weighins[index];
+      if (entry.id) await deleteWeighin(entry.id);
+      weighins.splice(index, 1);
+      renderWeighins();
+      renderProfile();
+    }
+  }
+
+  function renderWeighins() {
+    const container = document.getElementById('weighin-entries');
+    const empty     = document.getElementById('weighin-empty');
+    container.innerHTML = '';
+    if (weighins.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    const sorted = [...weighins].map((w,i) => ({...w,i})).sort((a,b) => new Date(b.date)-new Date(a.date));
+    const byDate = [...weighins].sort((a,b) => new Date(a.date)-new Date(b.date));
+    sorted.forEach(w => {
+      const chronoIdx = byDate.findIndex(x => x.date===w.date && x.weight===w.weight);
+      const prev = byDate[chronoIdx-1];
+      let deltaHTML = '';
+      if (prev) {
+        const diff  = (w.weight - prev.weight).toFixed(1);
+        const color = diff > 0 ? 'var(--accent-fire-text)' : 'var(--accent-grip-text)';
+        const sign  = diff > 0 ? '+' : '';
+        deltaHTML = `<span style="font-size:11px; color:${color}; margin-left:6px;">${sign}${diff}</span>`;
+      }
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border-primary); font-size:12px;';
+      row.innerHTML = `
+        <span style="color:var(--text-tertiary); font-size:11px; min-width:88px; flex-shrink:0;">${w.date}</span>
+        <span style="color:var(--text-primary); font-weight:500;">${w.weight} lbs${deltaHTML}</span>
+        <span style="color:var(--text-secondary); font-size:11px; flex:1;">${w.notes||''}</span>
+        <button onclick="deleteWeighIn(${w.i})" style="background:none; border:none; color:var(--text-tertiary); font-size:16px; cursor:pointer; padding:0 4px; line-height:1;">×</button>
+      `;
+      container.appendChild(row);
+    });
+    const rows = container.querySelectorAll('div');
+    if (rows.length) rows[rows.length-1].style.borderBottom = 'none';
+  }
+
+  // ── GTG ───────────────────────────────────────────────────
+  let activeGTGTab = 'pullup';
+
+  function saveGTGGoal(type) {
+    const id   = type==='pullup' ? 'gtg-goal-input' : 'pgu-goal-input';
+    const key  = type==='pullup' ? 'gtg-goal'       : 'pgu-goal';
+    const disp = type==='pullup' ? 'gtg-goal-display': 'pgu-goal-display';
+    const goal = parseInt(document.getElementById(id).value) || (type==='pullup'?15:30);
+    localStorage.setItem(key, goal);
+    document.getElementById(disp).textContent = goal;
+    savePreferences(currentUser?.id, { [type==='pullup'?'gtg_goal':'pgu_goal']: goal });
+    renderGTGPanel(type);
+  }
+
+  function setGTGTab(type) {
+    activeGTGTab = type;
+    document.getElementById('gtg-panel-pullup').style.display = type==='pullup'?'block':'none';
+    document.getElementById('gtg-panel-pushup').style.display = type==='pushup'?'block':'none';
+    document.getElementById('gtg-tab-pullup').style.background  = type==='pullup'?'var(--accent-grip-bg)':'none';
+    document.getElementById('gtg-tab-pullup').style.borderColor = type==='pullup'?'var(--accent-grip)':'var(--border-primary)';
+    document.getElementById('gtg-tab-pullup').style.color       = type==='pullup'?'var(--accent-grip-text)':'var(--text-tertiary)';
+    document.getElementById('gtg-tab-pushup').style.background  = type==='pushup'?'var(--accent-pack-bg)':'none';
+    document.getElementById('gtg-tab-pushup').style.borderColor = type==='pushup'?'var(--accent-pack)':'var(--border-primary)';
+    document.getElementById('gtg-tab-pushup').style.color       = type==='pushup'?'var(--accent-pack-text)':'var(--text-tertiary)';
+  }
+
+  async function logGTG(type) {
+    const repsId    = type==='pullup'?'gtg-reps':'pgu-reps';
+    const variantId = type==='pullup'?'gtg-grip':'pgu-variant';
+    const reps      = parseInt(document.getElementById(repsId).value);
+    const variant   = document.getElementById(variantId).value;
+    if (!reps || reps < 1) { alert('Enter rep count.'); return; }
+    const now  = new Date();
+    const date = now.toLocaleDateString('en-CA');
+    const time = now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true });
+    const entry = type==='pullup' ? { date, time, reps, grip:variant } : { date, time, reps, variant };
+    await saveGTGEntry(currentUser.id, entry, type);
+    if (type==='pullup') gtgLog.push(entry);
+    else                 pguLog.push(entry);
+    renderGTGPanel(type);
+    document.getElementById(repsId).value = '';
+  }
+
+  async function deleteGTGEntry(type, index) {
+    if (confirm('Remove this entry?')) {
+      const log   = type==='pullup' ? gtgLog : pguLog;
+      const entry = log[index];
+      if (entry.id) await deleteGTGEntry_db(entry.id);
+      log.splice(index, 1);
+      renderGTGPanel(type);
+    }
+  }
+
+  function renderGTGPanel(type) {
+    const isPullup    = type==='pullup';
+    const log         = isPullup ? gtgLog : pguLog;
+    const goalKey     = isPullup ? 'gtg-goal'         : 'pgu-goal';
+    const goalInputId = isPullup ? 'gtg-goal-input'   : 'pgu-goal-input';
+    const goalDispId  = isPullup ? 'gtg-goal-display' : 'pgu-goal-display';
+    const totalId     = isPullup ? 'gtg-today-total'  : 'pgu-today-total';
+    const barId       = isPullup ? 'gtg-progress-bar' : 'pgu-progress-bar';
+    const entriesId   = isPullup ? 'gtg-today-entries': 'pgu-today-entries';
+    const historyId   = isPullup ? 'gtg-history'      : 'pgu-history';
+    const barColor    = isPullup ? 'var(--accent-grip)': 'var(--accent-pack)';
+    const accentText  = isPullup ? 'var(--accent-grip-text)' : 'var(--accent-pack-text)';
+    const defaultGoal = isPullup ? 15 : 30;
+
+    const goal     = parseInt(localStorage.getItem(goalKey) || defaultGoal);
+    const todayStr = new Date().toLocaleDateString('en-CA');
+
+    document.getElementById(goalInputId).value       = goal;
+    document.getElementById(goalDispId).textContent  = goal;
+
+    const todayEntries = log.map((e,i) => ({...e,i})).filter(e => e.date===todayStr);
+    const todayTotal   = todayEntries.reduce((s,e) => s+e.reps, 0);
+    const pct          = Math.min(100, Math.round((todayTotal/goal)*100));
+
+    document.getElementById(totalId).textContent   = todayTotal;
+    document.getElementById(barId).style.width      = pct+'%';
+    document.getElementById(barId).style.background = pct>=100 ? accentText : barColor;
+
+    const entriesContainer = document.getElementById(entriesId);
+    entriesContainer.innerHTML = '';
+    if (todayEntries.length===0) {
+      entriesContainer.innerHTML = `<p style="font-size:12px; color:var(--text-tertiary); padding:4px 0;">Nothing logged today yet.</p>`;
+    } else {
+      const chips = todayEntries.map(e => `
+        <div style="display:inline-flex; align-items:center; gap:6px; background:var(--bg-card-alt); border:1px solid var(--border-primary); border-radius:var(--radius-tag); padding:4px 8px; font-size:11px; color:var(--text-secondary); margin:3px 4px 3px 0;">
+          <span style="color:${accentText}; font-weight:500;">+${e.reps}</span>
+          <span style="color:var(--text-tertiary);">${isPullup?e.grip:e.variant}</span>
+          <span style="color:var(--text-tertiary);">${e.time}</span>
+          <button onclick="deleteGTGEntry('${type}',${e.i})" style="background:none; border:none; color:var(--text-tertiary); font-size:13px; cursor:pointer; padding:0 1px; line-height:1;">×</button>
+        </div>`).join('');
+      entriesContainer.innerHTML = `<div style="margin-bottom:4px;">${chips}</div>`;
+    }
+
+    const historyContainer = document.getElementById(historyId);
+    historyContainer.innerHTML = '';
+    const historyDays = {};
+    log.forEach((e,i) => {
+      if (e.date===todayStr) return;
+      if (!historyDays[e.date]) historyDays[e.date] = [];
+      historyDays[e.date].push({...e,i});
+    });
+    const sortedDays = Object.keys(historyDays).sort((a,b) => new Date(b)-new Date(a));
+    if (sortedDays.length===0) return;
+
+    historyContainer.innerHTML = `<p style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-label); margin-bottom:8px; border-top:1px solid var(--border-primary); padding-top:10px;">Past days</p>`;
+    sortedDays.forEach(date => {
+      const dayEntries = historyDays[date];
+      const dayTotal   = dayEntries.reduce((s,e) => s+e.reps, 0);
+      const met        = dayTotal >= goal;
+      const breakdown  = dayEntries.map(e => `<span style="color:var(--text-tertiary); font-size:11px;">+${e.reps} ${isPullup?e.grip:e.variant} @ ${e.time}</span>`).join('<span style="color:var(--border-accent); margin:0 5px;">·</span>');
+      const row = document.createElement('div');
+      row.style.cssText = 'padding:6px 0; border-bottom:1px solid var(--border-primary);';
+      row.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:3px;">
+          <span style="color:var(--text-tertiary); font-size:11px; min-width:88px;">${date}</span>
+          <span style="font-family:var(--font-display); font-size:14px; font-weight:700; color:${met?accentText:'var(--text-primary)'};">${dayTotal} reps</span>
+          ${met?`<span style="font-size:10px; color:${accentText};">✓ goal</span>`:''}
+        </div>
+        <div style="padding-left:4px; line-height:1.8;">${breakdown}</div>
+      `;
+      historyContainer.appendChild(row);
+    });
+    const rows = historyContainer.querySelectorAll('div[style*="border-bottom"]');
+    if (rows.length) rows[rows.length-1].style.borderBottom = 'none';
+  }
+
+  const themes = ['dark', 'light', 'purple', 'blue', 'red'];
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = themes[(themes.indexOf(theme) + 1) % themes.length];
+  }
+
+  function toggleTheme() {
+    const current = localStorage.getItem('theme') || 'dark';
+    const next = themes[(themes.indexOf(current) + 1) % themes.length];
+    applyTheme(next);
+  }
+
+  applyTheme(localStorage.getItem('theme') || 'dark');
+  
+  // ── Start ─────────────────────────────────────────────────
+  initApp();
+</script>
+
+</body>
+</html>
