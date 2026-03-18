@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Muscle Fatigue</title>
+  <link rel="stylesheet" href="workout.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="db.js"></script>
+</head>
+<body>
+<div class="page">
+
+  <!-- NAV -->
+  <nav style="display:flex; gap:10px; margin-bottom:2rem; border-bottom:1px solid var(--border-primary); padding-bottom:1rem;">
+    <a href="workout.html" style="font-family:var(--font-display); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-secondary); text-decoration:none; padding:5px 12px; border:1px solid var(--border-primary); border-radius:var(--radius-tag);">← Plan</a>
+    <a href="log.html" style="font-family:var(--font-display); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-secondary); text-decoration:none; padding:5px 12px; border:1px solid var(--border-primary); border-radius:var(--radius-tag);">Log</a>
+    <a href="summary.html" style="font-family:var(--font-display); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-secondary); text-decoration:none; padding:5px 12px; border:1px solid var(--border-primary); border-radius:var(--radius-tag);">Summary</a>
+    <a href="fatigue.html" style="font-family:var(--font-display); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent-fire-text); text-decoration:none; padding:5px 12px; border:1px solid var(--accent-fire); border-radius:var(--radius-tag); background:var(--accent-fire-bg);">Fatigue</a>
+    <button id="theme-toggle" onclick="toggleTheme()" style="margin-left:auto; font-family:var(--font-display); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:5px 12px; border-radius:var(--radius-tag); cursor:pointer; background:none; border:1px solid var(--border-primary); color:var(--text-secondary);">Light</button>
+    <button onclick="signOut()" style="font-family:var(--font-display); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:5px 12px; border-radius:var(--radius-tag); cursor:pointer; background:none; border:1px solid var(--border-primary); color:var(--text-tertiary);">Sign out</button>
+  </nav>
+
+  <header class="page-header">
+    <h1>Muscle Fatigue</h1>
+    <p id="fatigue-subtitle">Loading...</p>
+  </header>
+
+  <!-- LEGEND -->
+  <div class="card" style="margin-bottom:12px;">
+    <p class="section-label">Legend</p>
+    <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:11px;">
+      <span><span style="display:inline-block; width:12px; height:12px; border-radius:2px; background:#2d5a1b; margin-right:5px; vertical-align:middle;"></span>Fresh</span>
+      <span><span style="display:inline-block; width:12px; height:12px; border-radius:2px; background:#7a6120; margin-right:5px; vertical-align:middle;"></span>Worked (24-72h)</span>
+      <span><span style="display:inline-block; width:12px; height:12px; border-radius:2px; background:#c0440f; margin-right:5px; vertical-align:middle;"></span>Sore (12-24h)</span>
+      <span><span style="display:inline-block; width:12px; height:12px; border-radius:2px; background:#8a0000; margin-right:5px; vertical-align:middle;"></span>Fatigued (&lt;12h)</span>
+      <span><span style="display:inline-block; width:12px; height:12px; border-radius:2px; background:#1a3a0a; margin-right:5px; vertical-align:middle;"></span>Secondary</span>
+    </div>
+  </div>
+
+  <!-- MANUAL OVERRIDE -->
+  <div class="card" style="margin-bottom:12px;">
+    <p class="section-label">Manual override</p>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+      <select id="manual-muscle" style="background:var(--bg-card-alt); border:1px solid var(--border-accent); border-radius:var(--radius-tag); color:var(--text-primary); font-family:var(--font-body); font-size:12px; padding:6px 10px;">
+        <option value="">-- Select muscle --</option>
+      </select>
+      <select id="manual-status" style="background:var(--bg-card-alt); border:1px solid var(--border-accent); border-radius:var(--radius-tag); color:var(--text-primary); font-family:var(--font-body); font-size:12px; padding:6px 10px;">
+        <option value="fresh">Fresh</option>
+        <option value="worked">Worked</option>
+        <option value="sore">Sore</option>
+        <option value="fatigued">Fatigued</option>
+      </select>
+      <button onclick="applyManualOverride()" style="background:var(--accent-fire-bg); border:1px solid var(--accent-fire); border-radius:var(--radius-tag); color:var(--accent-fire-text); font-family:var(--font-display); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:6px 14px; cursor:pointer;">Apply</button>
+      <button onclick="clearOverrides()" style="background:none; border:1px solid var(--border-primary); border-radius:var(--radius-tag); color:var(--text-tertiary); font-family:var(--font-display); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:6px 14px; cursor:pointer;">Clear all overrides</button>
+    </div>
+  </div>
+
+  <!-- BODY DIAGRAMS -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+
+    <!-- FRONT -->
+    <div class="card">
+      <p class="section-label">Front</p>
+      <svg id="svg-front" viewBox="0 0 200 420" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:300px; display:block; margin:0 auto;">
+
+        <!-- Head -->
+        <ellipse cx="100" cy="30" rx="22" ry="26" fill="var(--bg-card-alt)" stroke="var(--border-primary)" stroke-width="1"/>
+
+        <!-- Neck -->
+        <rect x="91" y="54" width="18" height="14" rx="3" fill="var(--bg-card-alt)" stroke="var(--border-primary)" stroke-width="1"/>
+
+        <!-- CHEST -->
+        <path id="front-chest" d="M68 72 Q100 68 132 72 L128 100 Q100 108 72 100 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('chest')">
+          <title>Chest</title>
+        </path>
+
+        <!-- FRONT DELT left -->
+        <path id="front-front_delt_l" d="M58 72 Q68 68 68 72 L72 100 Q62 95 55 88 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('front_delt')">
+          <title>Front Delt</title>
+        </path>
+        <!-- FRONT DELT right -->
+        <path id="front-front_delt_r" d="M142 72 Q132 68 132 72 L128 100 Q138 95 145 88 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('front_delt')">
+          <title>Front Delt</title>
+        </path>
+
+        <!-- SIDE DELT left -->
+        <path id="front-side_delt_l" d="M48 78 Q58 72 58 72 L55 88 Q46 90 44 84 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('side_delt')">
+          <title>Side Delt</title>
+        </path>
+        <!-- SIDE DELT right -->
+        <path id="front-side_delt_r" d="M152 78 Q142 72 142 72 L145 88 Q154 90 156 84 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('side_delt')">
+          <title>Side Delt</title>
+        </path>
+
+        <!-- BICEPS left -->
+        <path id="front-biceps_l" d="M44 88 Q55 88 55 88 L52 118 Q42 114 40 106 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('biceps')">
+          <title>Biceps</title>
+        </path>
+        <!-- BICEPS right -->
+        <path id="front-biceps_r" d="M156 88 Q145 88 145 88 L148 118 Q158 114 160 106 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('biceps')">
+          <title>Biceps</title>
+        </path>
+
+        <!-- FOREARMS left -->
+        <path id="front-forearms_l" d="M40 110 Q52 118 52 118 L50 148 Q38 142 36 132 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('forearms')">
+          <title>Forearms</title>
+        </path>
+        <!-- FOREARMS right -->
+        <path id="front-forearms_r" d="M160 110 Q148 118 148 118 L150 148 Q162 142 164 132 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('forearms')">
+          <title>Forearms</title>
+        </path>
+
+        <!-- ABS -->
+        <path id="front-abs" d="M72 100 Q100 108 128 100 L126 150 Q100 156 74 150 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('abs')">
+          <title>Abs</title>
+        </path>
+
+        <!-- OBLIQUES left -->
+        <path id="front-obliques_l" d="M62 102 Q72 100 72 100 L74 150 Q62 148 56 138 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('obliques')">
+          <title>Obliques</title>
+        </path>
+        <!-- OBLIQUES right -->
+        <path id="front-obliques_r" d="M138 102 Q128 100 128 100 L126 150 Q138 148 144 138 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('obliques')">
+          <title>Obliques</title>
+        </path>
+
+        <!-- HIP FLEXORS -->
+        <path id="front-hip_flexors" d="M74 150 Q100 156 126 150 L122 172 Q100 176 78 172 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('hip_flexors')">
+          <title>Hip Flexors</title>
+        </path>
+
+        <!-- QUADS left -->
+        <path id="front-quads_l" d="M78 172 Q100 176 100 176 L98 270 Q82 268 76 252 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('quads')">
+          <title>Quads</title>
+        </path>
+        <!-- QUADS right -->
+        <path id="front-quads_r" d="M122 172 Q100 176 100 176 L102 270 Q118 268 124 252 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('quads')">
+          <title>Quads</title>
+        </path>
+
+        <!-- CALVES front left -->
+        <path id="front-calves_l" d="M76 272 Q98 270 98 270 L96 340 Q80 338 74 320 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('calves')">
+          <title>Calves</title>
+        </path>
+        <!-- CALVES front right -->
+        <path id="front-calves_r" d="M124 272 Q102 270 102 270 L104 340 Q120 338 126 320 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('calves')">
+          <title>Calves</title>
+        </path>
+
+        <!-- Feet -->
+        <ellipse cx="86" cy="348" rx="14" ry="7" fill="var(--bg-card-alt)" stroke="var(--border-primary)" stroke-width="1"/>
+        <ellipse cx="114" cy="348" rx="14" ry="7" fill="var(--bg-card-alt)" stroke="var(--border-primary)" stroke-width="1"/>
+
+        <!-- Muscle labels -->
+        <text x="100" y="88" text-anchor="middle" font-size="7" fill="var(--text-tertiary)" font-family="var(--font-display)">CHEST</text>
+        <text x="100" y="130" text-anchor="middle" font-size="7" fill="var(--text-tertiary)" font-family="var(--font-display)">ABS</text>
+        <text x="88" y="225" text-anchor="middle" font-size="7" fill="var(--text-tertiary)" font-family="var(--font-display)">QUAD</text>
+        <text x="112" y="225" text-anchor="middle" font-size="7" fill="var(--text-tertiary)" font-family="var(--font-display)">QUAD</text>
+        <text x="86" y="305" text-anchor="middle" font-size="7" fill="var(--text-tertiary)" font-family="var(--font-display)">CALF</text>
+        <text x="114" y="305" text-anchor="middle" font-size="7" fill="var(--text-tertiary)" font-family="var(--font-display)">CALF</text>
+      </svg>
+    </div>
+
+    <!-- BACK -->
+    <div class="card">
+      <p class="section-label">Back</p>
+      <svg id="svg-back" viewBox="0 0 200 420" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:300px; display:block; margin:0 auto;">
+
+        <!-- Head -->
+        <ellipse cx="100" cy="30" rx="22" ry="26" fill="var(--bg-card-alt)" stroke="var(--border-primary)" stroke-width="1"/>
+
+        <!-- Neck -->
+        <rect x="91" y="54" width="18" height="14" rx="3" fill="var(--bg-card-alt)" stroke="var(--border-primary)" stroke-width="1"/>
+
+        <!-- TRAPS -->
+        <path id="back-traps" d="M72 66 Q100 62 128 66 L132 88 Q100 94 68 88 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('traps')">
+          <title>Traps</title>
+        </path>
+
+        <!-- REAR DELT left -->
+        <path id="back-rear_delt_l" d="M52 78 Q68 70 68 88 L62 100 Q50 94 48 86 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('rear_delt')">
+          <title>Rear Delt</title>
+        </path>
+        <!-- REAR DELT right -->
+        <path id="back-rear_delt_r" d="M148 78 Q132 70 132 88 L138 100 Q150 94 152 86 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('rear_delt')">
+          <title>Rear Delt</title>
+        </path>
+
+        <!-- TRICEPS left -->
+        <path id="back-triceps_l" d="M44 88 Q52 86 52 86 L48 118 Q38 112 36 102 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('triceps')">
+          <title>Triceps</title>
+        </path>
+        <!-- TRICEPS right -->
+        <path id="back-triceps_r" d="M156 88 Q148 86 148 86 L152 118 Q162 112 164 102 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('triceps')">
+          <title>Triceps</title>
+        </path>
+
+        <!-- FOREARMS back left -->
+        <path id="back-forearms_bl" d="M36 106 Q48 118 48 118 L46 148 Q34 142 32 130 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('forearms')">
+          <title>Forearms</title>
+        </path>
+        <!-- FOREARMS back right -->
+        <path id="back-forearms_br" d="M164 106 Q152 118 152 118 L154 148 Q166 142 168 130 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('forearms')">
+          <title>Forearms</title>
+        </path>
+
+        <!-- RHOMBOIDS -->
+        <path id="back-rhomboids" d="M68 88 Q100 94 132 88 L128 118 Q100 124 72 118 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('rhomboids')">
+          <title>Rhomboids</title>
+        </path>
+
+        <!-- LATS left -->
+        <path id="back-lats_l" d="M60 100 Q68 96 72 118 L70 148 Q56 142 52 126 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('lats')">
+          <title>Lats</title>
+        </path>
+        <!-- LATS right -->
+        <path id="back-lats_r" d="M140 100 Q132 96 128 118 L130 148 Q144 142 148 126 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('lats')">
+          <title>Lats</title>
+        </path>
+
+        <!-- ERECTOR SPINAE -->
+        <path id="back-erector_spinae" d="M88 118 Q100 124 112 118 L114 170 Q100 174 86 170 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('erector_spinae')">
+          <title>Erector Spinae</title>
+        </path>
+
+        <!-- QUADRATUS LUMBORUM left -->
+        <path id="back-quadratus_lumborum_l" d="M72 140 Q88 136 88 140 L86 170 Q72 166 68 156 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('quadratus_lumborum')">
+          <title>QL</title>
+        </path>
+        <!-- QUADRATUS LUMBORUM right -->
+        <path id="back-quadratus_lumborum_r" d="M128 140 Q112 136 112 140 L114 170 Q128 166 132 156 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('quadratus_lumborum')">
+          <title>QL</title>
+        </path>
+
+        <!-- GLUTES -->
+        <path id="back-glutes" d="M74 170 Q100 174 126 170 L124 210 Q100 216 76 210 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('glutes')">
+          <title>Glutes</title>
+        </path>
+
+        <!-- GLUTE MED left -->
+        <path id="back-glute_med_l" d="M62 158 Q74 154 74 170 L76 210 Q62 206 56 192 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('glute_med')">
+          <title>Glute Med</title>
+        </path>
+        <!-- GLUTE MED right -->
+        <path id="back-glute_med_r" d="M138 158 Q126 154 126 170 L124 210 Q138 206 144 192 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('glute_med')">
+          <title>Glute Med</title>
+        </path>
+
+        <!-- HAMSTRINGS left -->
+        <path id="back-hamstrings_l" d="M76 210 Q100 216 100 216 L98 272 Q80 270 74 254 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('hamstrings')">
+          <title>Hamstrings</title>
+        </path>
+        <!-- HAMSTRINGS right -->
+        <path id="back-hamstrings_r" d="M124 210 Q100 216 100 216 L102 272 Q120 270 126 254 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('hamstrings')">
+          <title>Hamstrings</title>
+        </path>
+
+        <!-- CALVES back left -->
+        <path id="back-calves_l" d="M74 274 Q98 272 98 272 L96 342 Q78 340 72 322 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('calves')">
+          <title>Calves</title>
+        </path>
+        <!-- CALVES back right -->
+        <path id="back-calves_r" d="M126 274 Q102 272 102 272 L104 342 Q122 340 128 322 Z" fill="#2d5a1b" stroke="var(--border-primary)" stroke-width="1" style="cursor:pointer;" onclick="cycleManual('calves')">
+          <title>Calves</title>
+        </path>
+
+        <!-- Feet -->
+        <ellipse cx="86" cy="350" rx="14" ry="7" fill="var(--bg-card-alt)" stroke="var(--border-primary)" stroke-width="1"/>
+        <ellipse cx="114" cy="350" rx="14" ry="7" fill="var(--bg-card-alt)" stroke="var(--border-primary)" stroke-width="1"/>
+
+        <!-- Labels -->
+        <text x="100" y="80" text-anchor="middle" font-size="7" fill="var(--text-tertiary)" font-family="var(--font-display)">TRAPS</text>
+        <text x="100" y="108" text-anchor="middle" font-size="7" fill="var(--text-tertiary)" font-family="var(--font-display)">RHOMBOIDS</text>
+        <text x="100" y="148" text-anchor="middle" font-size="7" fill="var(--text-tertiary)" font-family="var(--font-display)">ERECTORS</text>
+        <text x="100" y="194" text-anchor="middle" font-size="7" fill="var(--text-tertiary)" font-family="var(--font-display)">GLUTES</text>
+        <text x="88" y="242" text-anchor="middle" font-size="7" fill="var(--text-tertiary)" font-family="var(--font-display)">HAM</text>
+        <text x="112" y="242" text-anchor="middle" font-size="7" fill="var(--text-tertiary)" font-family="var(--font-display)">HAM</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- MUSCLE STATUS TABLE -->
+  <div class="card">
+    <p class="section-label">Muscle status</p>
+    <div id="muscle-status-table"></div>
+  </div>
+
+  <!-- LAST WORKED -->
+  <div class="card">
+    <p class="section-label">Last worked</p>
+    <div id="last-worked-list"></div>
+  </div>
+
+</div>
+
+<script>
+  // ── Recovery thresholds (hours) ───────────────────────────
+  const RECOVERY = {
+    fatigued: 12,
+    sore:     24,
+    worked:   72,
+    fresh:    Infinity
+  };
+
+  // ── Muscle display names ──────────────────────────────────
+  const MUSCLE_NAMES = {
+    chest:               'Chest',
+    front_delt:          'Front Delt',
+    side_delt:           'Side Delt',
+    rear_delt:           'Rear Delt',
+    triceps:             'Triceps',
+    biceps:              'Biceps',
+    forearms:            'Forearms',
+    traps:               'Traps',
+    rhomboids:           'Rhomboids',
+    lats:                'Lats',
+    erector_spinae:      'Erector Spinae',
+    quadratus_lumborum:  'Quadratus Lumborum',
+    abs:                 'Abs',
+    obliques:            'Obliques',
+    glutes:              'Glutes',
+    glute_med:           'Glute Med',
+    quads:               'Quads',
+    hamstrings:          'Hamstrings',
+    calves:              'Calves',
+    hip_flexors:         'Hip Flexors',
+  };
+
+  // ── SVG element IDs per muscle ────────────────────────────
+  const MUSCLE_ELEMENTS = {
+    chest:              ['front-chest'],
+    front_delt:         ['front-front_delt_l','front-front_delt_r'],
+    side_delt:          ['front-side_delt_l','front-side_delt_r'],
+    rear_delt:          ['back-rear_delt_l','back-rear_delt_r'],
+    triceps:            ['back-triceps_l','back-triceps_r'],
+    biceps:             ['front-biceps_l','front-biceps_r'],
+    forearms:           ['front-forearms_l','front-forearms_r','back-forearms_bl','back-forearms_br'],
+    traps:              ['back-traps'],
+    rhomboids:          ['back-rhomboids'],
+    lats:               ['back-lats_l','back-lats_r'],
+    erector_spinae:     ['back-erector_spinae'],
+    quadratus_lumborum: ['back-quadratus_lumborum_l','back-quadratus_lumborum_r'],
+    abs:                ['front-abs'],
+    obliques:           ['front-obliques_l','front-obliques_r'],
+    glutes:             ['back-glutes'],
+    glute_med:          ['back-glute_med_l','back-glute_med_r'],
+    quads:              ['front-quads_l','front-quads_r'],
+    hamstrings:         ['back-hamstrings_l','back-hamstrings_r'],
+    calves:             ['front-calves_l','front-calves_r','back-calves_l','back-calves_r'],
+    hip_flexors:        ['front-hip_flexors'],
+  };
+
+  // ── Status colors ─────────────────────────────────────────
+  const STATUS_COLORS = {
+    fatigued:  '#8a0000',
+    sore:      '#c0440f',
+    worked:    '#7a6120',
+    fresh:     '#2d5a1b',
+    secondary: '#1a3a0a',
+  };
+
+  let muscleDB     = {};
+  let entries      = [];
+  let fatigueState = {}; // muscle → { status, hoursAgo, lastDate, override }
+  let manualOverrides = JSON.parse(localStorage.getItem('fatigue-overrides') || '{}');
+
+  // ── Load data ─────────────────────────────────────────────
+  async function initFatigue() {
+    const user = await requireAuth();
+    if (!user) return;
+
+    // Load muscle database
+    try {
+      const res = await fetch('muscles.json');
+      muscleDB = await res.json();
+    } catch(e) {
+      console.error('Failed to load muscles.json', e);
+    }
+
+    // Load sessions
+    entries = await loadSessions(user.id);
+
+    // Populate manual muscle dropdown
+    const sel = document.getElementById('manual-muscle');
+    Object.entries(MUSCLE_NAMES).forEach(([key, name]) => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    });
+
+    computeFatigue();
+    renderDiagram();
+    renderStatusTable();
+    renderLastWorked();
+
+    document.getElementById('fatigue-subtitle').textContent =
+      'Auto-updated from your log · ' + new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  }
+
+  // ── Compute fatigue from sessions ─────────────────────────
+  function computeFatigue() {
+    const now = new Date();
+
+    // Reset
+    fatigueState = {};
+    Object.keys(MUSCLE_NAMES).forEach(m => {
+      fatigueState[m] = { status:'fresh', hoursAgo: Infinity, lastDate: null, primary: false };
+    });
+
+    // Walk through all sessions and track most recent hit per muscle
+    entries.forEach(session => {
+      const sessionDate = new Date(session.date + 'T12:00:00'); // noon to avoid timezone issues
+      const hoursAgo = (now - sessionDate) / 3600000;
+
+      // Map session type for stair/ruck
+      const sessionTypeMuscles = getSessionTypeMuscles(session);
+
+      // Exercises
+      const exercises = session.exercises || [];
+      exercises.forEach(ex => {
+        const mapping = findMapping(ex.name);
+        if (!mapping) return;
+        updateMuscle(mapping.primary,   hoursAgo, true,  session.date);
+        updateMuscle(mapping.secondary, hoursAgo, false, session.date);
+        updateMuscle(mapping.tertiary,  hoursAgo, false, session.date);
+      });
+
+      // Session type muscles (stairs/ruck with no exercise list)
+      sessionTypeMuscles.forEach(m => updateMuscle([m], hoursAgo, true, session.date));
+    });
+
+    // Apply manual overrides
+    Object.entries(manualOverrides).forEach(([muscle, override]) => {
+      if (fatigueState[muscle]) {
+        fatigueState[muscle].status   = override.status;
+        fatigueState[muscle].override = true;
+      }
+    });
+  }
+
+  function findMapping(exerciseName) {
+    // Exact match first
+    if (muscleDB[exerciseName]) return muscleDB[exerciseName];
+    // Case-insensitive match
+    const lower = exerciseName.toLowerCase();
+    const key = Object.keys(muscleDB).find(k => k.toLowerCase() === lower);
+    if (key) return muscleDB[key];
+    // Partial match — exercise name contains a known key
+    const partial = Object.keys(muscleDB).find(k => lower.includes(k.toLowerCase()) || k.toLowerCase().includes(lower));
+    return partial ? muscleDB[partial] : null;
+  }
+
+  function getSessionTypeMuscles(session) {
+    const muscles = [];
+    if (session.type === 'Stairs' && session.stairsData) {
+      muscles.push(...['quads','glutes','calves','hamstrings','hip_flexors','erector_spinae']);
+    }
+    if (session.type === 'Ruck' && session.ruckData) {
+      muscles.push(...['quads','glutes','calves','traps','erector_spinae','abs']);
+    }
+    if (session.type === 'Sandbag') {
+      muscles.push(...['glutes','hamstrings','erector_spinae','quads','forearms']);
+    }
+    return muscles;
+  }
+
+  function updateMuscle(muscleList, hoursAgo, isPrimary, date) {
+    if (!muscleList) return;
+    muscleList.forEach(muscle => {
+      if (!fatigueState[muscle]) return;
+      if (hoursAgo < fatigueState[muscle].hoursAgo) {
+        fatigueState[muscle].hoursAgo  = hoursAgo;
+        fatigueState[muscle].lastDate  = date;
+        fatigueState[muscle].primary   = isPrimary;
+        fatigueState[muscle].status    = getStatus(hoursAgo);
+      }
+    });
+  }
+
+  function getStatus(hoursAgo) {
+    if (hoursAgo <= RECOVERY.fatigued) return 'fatigued';
+    if (hoursAgo <= RECOVERY.sore)     return 'sore';
+    if (hoursAgo <= RECOVERY.worked)   return 'worked';
+    return 'fresh';
+  }
+
+  // ── Render SVG diagram ────────────────────────────────────
+  function renderDiagram() {
+    Object.entries(MUSCLE_ELEMENTS).forEach(([muscle, ids]) => {
+      const state  = fatigueState[muscle];
+      const color  = state ? STATUS_COLORS[state.status] : STATUS_COLORS.fresh;
+      const opacity = state && !state.primary && state.status !== 'fresh' ? '0.6' : '1';
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.setAttribute('fill', color);
+          el.setAttribute('opacity', opacity);
+        }
+      });
+    });
+  }
+
+  // ── Render status table ───────────────────────────────────
+  function renderStatusTable() {
+    const container = document.getElementById('muscle-status-table');
+    const groups = {
+      'Push':  ['chest','front_delt','side_delt','triceps'],
+      'Pull':  ['lats','rhomboids','traps','rear_delt','biceps','forearms'],
+      'Core':  ['abs','obliques','erector_spinae','quadratus_lumborum'],
+      'Lower': ['quads','hamstrings','glutes','glute_med','calves','hip_flexors'],
+    };
+
+    let html = '';
+    Object.entries(groups).forEach(([group, muscles]) => {
+      html += `<div style="margin-bottom:10px;">
+        <div style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-label); margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid var(--border-primary);">${group}</div>`;
+      muscles.forEach(muscle => {
+        const state = fatigueState[muscle];
+        if (!state) return;
+        const color = STATUS_COLORS[state.status];
+        const hoursText = state.hoursAgo === Infinity ? 'Not worked' : Math.round(state.hoursAgo) + 'h ago';
+        const overrideTag = state.override ? `<span style="font-size:9px; color:var(--text-tertiary); margin-left:4px;">(manual)</span>` : '';
+        html += `
+          <div style="display:flex; align-items:center; gap:10px; padding:5px 0; border-bottom:1px solid var(--border-primary); font-size:12px;">
+            <span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:${color}; flex-shrink:0;"></span>
+            <span style="flex:1; color:var(--text-primary);">${MUSCLE_NAMES[muscle]}${overrideTag}</span>
+            <span style="color:var(--text-secondary); font-size:11px; text-transform:capitalize;">${state.status}</span>
+            <span style="color:var(--text-tertiary); font-size:11px; min-width:70px; text-align:right;">${hoursText}</span>
+          </div>`;
+      });
+      html += '</div>';
+    });
+    container.innerHTML = html;
+  }
+
+  // ── Render last worked list ───────────────────────────────
+  function renderLastWorked() {
+    const container = document.getElementById('last-worked-list');
+    const sorted = Object.entries(fatigueState)
+      .filter(([, s]) => s.lastDate)
+      .sort((a, b) => a[1].hoursAgo - b[1].hoursAgo);
+
+    if (sorted.length === 0) {
+      container.innerHTML = `<p style="font-size:12px; color:var(--text-tertiary);">No sessions logged yet.</p>`;
+      return;
+    }
+
+    let html = '';
+    sorted.forEach(([muscle, state]) => {
+      const color = STATUS_COLORS[state.status];
+      html += `
+        <div style="display:flex; align-items:center; gap:10px; padding:5px 0; border-bottom:1px solid var(--border-primary); font-size:12px;">
+          <span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:${color}; flex-shrink:0;"></span>
+          <span style="flex:1; color:var(--text-primary);">${MUSCLE_NAMES[muscle]}</span>
+          <span style="color:var(--text-tertiary); font-size:11px;">${state.lastDate}</span>
+          <span style="color:var(--text-secondary); font-size:11px; min-width:60px; text-align:right;">${Math.round(state.hoursAgo)}h ago</span>
+        </div>`;
+    });
+    container.innerHTML = html;
+
+    const rows = container.querySelectorAll('div');
+    if (rows.length) rows[rows.length-1].style.borderBottom = 'none';
+  }
+
+  // ── Manual override ───────────────────────────────────────
+  function applyManualOverride() {
+    const muscle = document.getElementById('manual-muscle').value;
+    const status = document.getElementById('manual-status').value;
+    if (!muscle) { alert('Select a muscle.'); return; }
+    manualOverrides[muscle] = { status };
+    localStorage.setItem('fatigue-overrides', JSON.stringify(manualOverrides));
+    computeFatigue();
+    renderDiagram();
+    renderStatusTable();
+    renderLastWorked();
+  }
+
+  function clearOverrides() {
+    manualOverrides = {};
+    localStorage.setItem('fatigue-overrides', JSON.stringify(manualOverrides));
+    computeFatigue();
+    renderDiagram();
+    renderStatusTable();
+    renderLastWorked();
+  }
+
+  // ── Click muscle on diagram to cycle status ───────────────
+  function cycleManual(muscle) {
+    const states   = ['fresh','worked','sore','fatigued'];
+    const current  = manualOverrides[muscle]?.status || fatigueState[muscle]?.status || 'fresh';
+    const next     = states[(states.indexOf(current) + 1) % states.length];
+    manualOverrides[muscle] = { status: next };
+    localStorage.setItem('fatigue-overrides', JSON.stringify(manualOverrides));
+    computeFatigue();
+    renderDiagram();
+    renderStatusTable();
+    renderLastWorked();
+  }
+
+  // ── Theme ─────────────────────────────────────────────────
+  const themes = ['dark','light','purple','blue','red'];
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = themes[(themes.indexOf(theme) + 1) % themes.length];
+  }
+  function toggleTheme() {
+    const current = localStorage.getItem('theme') || 'dark';
+    applyTheme(themes[(themes.indexOf(current) + 1) % themes.length]);
+  }
+  applyTheme(localStorage.getItem('theme') || 'dark');
+
+  // ── Start ─────────────────────────────────────────────────
+  initFatigue();
+</script>
+</body>
+</html>
