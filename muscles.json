@@ -1,0 +1,286 @@
+{
+
+  "Bench Press (Barbell)": {
+    "primary": ["chest"],
+    "secondary": ["front_delt", "triceps"],
+    "tertiary": ["side_delt"]
+  },
+  "Overhead Press (Barbell)": {
+    "primary": ["front_delt"],
+    "secondary": ["side_delt", "triceps", "traps"],
+    "tertiary": ["abs", "erector_spinae"]
+  },
+  "Squat (Barbell)": {
+    "primary": ["quads", "glutes"],
+    "secondary": ["hamstrings", "erector_spinae", "glute_med"],
+    "tertiary": ["abs", "quadratus_lumborum"]
+  },
+  "Deadlift (Barbell)": {
+    "primary": ["hamstrings", "glutes", "erector_spinae"],
+    "secondary": ["traps", "rhomboids", "lats", "forearms"],
+    "tertiary": ["quads", "abs"]
+  },
+  "Bent Over Row (Barbell)": {
+    "primary": ["lats", "rhomboids"],
+    "secondary": ["traps", "rear_delt", "biceps"],
+    "tertiary": ["erector_spinae", "forearms"]
+  },
+  "Romanian Deadlift (Barbell)": {
+    "primary": ["hamstrings", "glutes"],
+    "secondary": ["erector_spinae", "forearms"],
+    "tertiary": ["traps", "quadratus_lumborum"]
+  },
+  "Good Morning": {
+    "primary": ["hamstrings", "erector_spinae"],
+    "secondary": ["glutes", "quadratus_lumborum"],
+    "tertiary": ["abs"]
+  },
+
+
+  "Sandbag Clean (Lap to Chest)": {
+    "primary": ["glutes", "hamstrings", "erector_spinae"],
+    "secondary": ["quads", "traps", "biceps"],
+    "tertiary": ["forearms", "abs", "rhomboids"]
+  },
+  "Sandbag Bear Hug Carry": {
+    "primary": ["erector_spinae", "abs"],
+    "secondary": ["biceps", "quads", "glutes"],
+    "tertiary": ["forearms", "traps", "quadratus_lumborum"]
+  },
+  "Sandbag Lunges": {
+    "primary": ["quads", "glutes"],
+    "secondary": ["hamstrings", "glute_med", "abs"],
+    "tertiary": ["erector_spinae", "forearms"]
+  },
+  "Sandbag Shouldering": {
+    "primary": ["glutes", "hamstrings", "erector_spinae"],
+    "secondary": ["traps", "obliques", "biceps"],
+    "tertiary": ["quads", "forearms"]
+  },
+  "Stair Climb": {
+    "primary": ["quads", "glutes"],
+    "secondary": ["calves", "hamstrings", "hip_flexors"],
+    "tertiary": ["abs"]
+  },
+  "Ruck": {
+    "primary": ["quads", "glutes", "erector_spinae"],
+    "secondary": ["calves", "traps", "abs"],
+    "tertiary": ["hip_flexors", "quadratus_lumborum", "forearms"]
+  },
+  "EZ Bar Axe Work": {
+    "primary": ["obliques", "abs", "forearms"],
+    "secondary": ["side_delt", "lats", "erector_spinae"],
+    "tertiary": ["traps"]
+  },
+  "Farmer's Walk": {
+    "primary": ["forearms", "traps"],
+    "secondary": ["abs", "glutes", "erector_spinae"],
+    "tertiary": ["quads", "calves", "rhomboids"]
+  },
+
+  "Pull-Ups": {
+    "primary": ["lats"],
+    "secondary": ["biceps", "rhomboids", "traps"],
+    "tertiary": ["rear_delt", "forearms", "abs"]
+  },
+  "Negative Pull-Ups": {
+    "primary": ["lats"],
+    "secondary": ["biceps", "forearms", "rhomboids"],
+    "tertiary": ["traps"]
+  },
+  "Dips": {
+    "primary": ["triceps", "chest"],
+    "secondary": ["front_delt"],
+    "tertiary": ["abs"]
+  },
+  "Sissy Squat": {
+    "primary": ["quads"],
+    "secondary": ["abs", "hip_flexors"],
+    "tertiary": ["glutes"]
+  },
+  "Step-Ups": {
+    "primary": ["quads", "glutes"],
+    "secondary": ["glute_med", "calves", "hamstrings"],
+    "tertiary": ["abs"]
+  },
+  "Dead Hang": {
+    "primary": ["forearms"],
+    "secondary": ["lats", "traps"],
+    "tertiary": ["abs"]
+  },
+
+  "Band Pull-Aparts": {
+    "primary": ["rear_delt", "rhomboids"],
+    "secondary": ["traps", "side_delt"],
+    "tertiary": ["forearms"]
+  },
+  "Band Face Pulls": {
+    "primary": ["rear_delt", "traps"],
+    "secondary": ["side_delt", "rhomboids"],
+    "tertiary": ["biceps"]
+  },
+  "Band Bicep Curl": {
+    "primary": ["biceps"],
+    "secondary": ["forearms"],
+    "tertiary": []
+  },
+  "Band Overhead Tricep Extension": {
+    "primary": ["triceps"],
+    "secondary": ["front_delt"],
+    "tertiary": ["abs"]
+  },
+
+  "Cable Row (Seated)": {
+    "primary": ["lats", "rhomboids"],
+    "secondary": ["traps", "biceps"],
+    "tertiary": ["forearms", "erector_spinae"]
+  },
+  "Cable Woodchopper": {
+    "primary": ["obliques"],
+    "secondary": ["abs", "side_delt"],
+    "tertiary": ["glutes", "forearms"]
+  },
+  "Dumbbell Lateral Raise": {
+    "primary": ["side_delt"],
+    "secondary": ["front_delt", "traps"],
+    "tertiary": []
+  },
+  "Leg Press (Machine)": {
+    "primary": ["quads"],
+    "secondary": ["glutes", "hamstrings"],
+    "tertiary": ["calves"]
+  },
+
+
+  "90/90 Hip Switches": {
+    "primary": ["hip_flexors", "glute_med"],
+    "secondary": ["glutes"],
+    "tertiary": ["obliques"]
+  },
+  "Bird-Dog": {
+    "primary": ["erector_spinae", "abs"],
+    "secondary": ["glutes", "rear_delt"],
+    "tertiary": ["hip_flexors", "traps"]
+  },
+  "World's Greatest Stretch": {
+    "primary": ["hip_flexors", "hamstrings"],
+    "secondary": ["glutes", "abs"],
+    "tertiary": ["quads", "calves"]
+  },
+  "Dead Bug": {
+    "primary": ["abs"],
+    "secondary": ["obliques", "hip_flexors"],
+    "tertiary": ["erector_spinae"]
+  },
+  "Scapular Pull-Ups": {
+    "primary": ["traps", "rhomboids"],
+    "secondary": ["lats", "forearms"],
+    "tertiary": ["rear_delt"]
+  },
+
+  "Seated OHP (Barbell)": {
+    "primary": ["front_delt"],
+    "secondary": ["side_delt", "triceps", "traps"],
+    "tertiary": ["abs"]
+  },
+
+  "Incline Bench Press (Barbell)": {
+    "primary": ["chest", "front_delt"],
+    "secondary": ["triceps"],
+    "tertiary": ["side_delt", "rhomboids"]
+  },
+  "Close Grip Bench Press": {
+    "primary": ["triceps", "chest"],
+    "secondary": ["front_delt"],
+    "tertiary": ["forearms"]
+  },
+  "Sumo Deadlift": {
+    "primary": ["quads", "glutes", "hamstrings"],
+    "secondary": ["erector_spinae", "traps", "hip_flexors"],
+    "tertiary": ["abs", "forearms", "glute_med"]
+  },
+  "Bicep Curl (Barbell)": {
+    "primary": ["biceps"],
+    "secondary": ["forearms"],
+    "tertiary": ["front_delt", "abs"]
+  },
+  "Shrug (Barbell)": {
+    "primary": ["traps"],
+    "secondary": ["forearms"],
+    "tertiary": ["erector_spinae", "rhomboids"]
+  },
+
+  "Lunge (Dumbbell)": {
+    "primary": ["quads", "glutes"],
+    "secondary": ["hamstrings", "glute_med", "calves"],
+    "tertiary": ["forearms", "abs"]
+  },
+  "Dumbbell Row": {
+    "primary": ["lats", "rhomboids"],
+    "secondary": ["biceps", "rear_delt", "traps"],
+    "tertiary": ["forearms", "abs"]
+  },
+  "Hammer Curl": {
+    "primary": ["biceps", "forearms"],
+    "secondary": ["brachialis"],
+    "tertiary": ["front_delt"]
+  },
+
+  "Leg Extension (Machine)": {
+    "primary": ["quads"],
+    "secondary": [],
+    "tertiary": []
+  },
+  "Hip Thrust": {
+    "primary": ["glutes"],
+    "secondary": ["hamstrings", "erector_spinae"],
+    "tertiary": ["quads", "abs"]
+  },
+  "Calf Raise": {
+    "primary": ["calves"],
+    "secondary": [],
+    "tertiary": []
+  },
+  "Lat Pulldown": {
+    "primary": ["lats"],
+    "secondary": ["biceps", "rhomboids", "traps"],
+    "tertiary": ["forearms", "rear_delt"]
+  },
+  "Face Pull (Cable)": {
+    "primary": ["rear_delt", "traps"],
+    "secondary": ["side_delt", "rhomboids"],
+    "tertiary": ["biceps"]
+  },
+  "Tricep Pushdown (Cable)": {
+    "primary": ["triceps"],
+    "secondary": [],
+    "tertiary": ["forearms"]
+  },
+
+  "Push-Up (Standard)": {
+    "primary": ["chest"],
+    "secondary": ["front_delt", "triceps"],
+    "tertiary": ["abs", "obliques"]
+  },
+  "Push-Up (Wide)": {
+    "primary": ["chest"],
+    "secondary": ["front_delt"],
+    "tertiary": ["triceps", "abs"]
+  },
+  "Push-Up (Diamond)": {
+    "primary": ["triceps"],
+    "secondary": ["chest", "front_delt"],
+    "tertiary": ["abs"]
+  },
+  "Push-Up (Incline)": {
+    "primary": ["chest"], 
+    "secondary": ["triceps", "front_delt"],
+    "tertiary": ["abs"]
+  },
+  "Push-Up (Decline)": {
+    "primary": ["front_delt", "chest"], 
+    "secondary": ["triceps"],
+    "tertiary": ["abs", "erector_spinae"]
+  }
+
+}
