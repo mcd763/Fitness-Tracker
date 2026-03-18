@@ -220,11 +220,11 @@
     "secondary": ["biceps", "rear_delt", "traps"],
     "tertiary": ["forearms", "abs"]
   },
-  "Hammer Curl": {
-    "primary": ["biceps", "forearms"],
-    "secondary": ["brachialis"],
-    "tertiary": ["front_delt"]
-  },
+"Hammer Curl": {
+  "primary": ["biceps", "forearms"],
+  "secondary": ["forearms"],
+  "tertiary": ["front_delt"]
+},
 
   "Leg Extension (Machine)": {
     "primary": ["quads"],
@@ -281,6 +281,22 @@
     "primary": ["front_delt", "chest"], 
     "secondary": ["triceps"],
     "tertiary": ["abs", "erector_spinae"]
-  }
+  },
+
+  "Good Morning (Barbell)": {
+  "primary": ["hamstrings", "erector_spinae"],
+  "secondary": ["glutes", "quadratus_lumborum"],
+  "tertiary": ["abs"]
+},
+"Sissy Squat (Plate)": {
+  "primary": ["quads"],
+  "secondary": ["abs", "hip_flexors"],
+  "tertiary": ["glutes"]
+},
+"Stair Climb with 50lb pack": {
+  "primary": ["quads", "glutes"],
+  "secondary": ["calves", "hamstrings", "hip_flexors"],
+  "tertiary": ["abs", "erector_spinae"]
+}
 
 }
