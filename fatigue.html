@@ -29,6 +29,12 @@
   </style>
 </head>
 <body>
+  <div id="debug" style="background:#300; color:#f99; font-size:11px; padding:8px; margin-bottom:10px; border-radius:4px; word-break:break-all;"></div>
+<script>
+  window.onerror = function(msg, src, line) {
+    document.getElementById('debug').textContent += '❌ ' + msg + ' (line ' + line + ')\n';
+  };
+</script>
 <div class="page">
 
   <nav style="display:flex; gap:10px; margin-bottom:2rem; border-bottom:1px solid var(--border-primary); padding-bottom:1rem; flex-wrap:wrap;">
@@ -391,32 +397,42 @@
   let fatigueState = {};
   let manualOverrides = JSON.parse(localStorage.getItem('fatigue-overrides') || '{}');
 
-  async function initFatigue() {
-    const user = await requireAuth();
-    if (!user) return;
+async function initFatigue() {
+  const dbg = document.getElementById('debug');
+  dbg.textContent += '1. starting\n';
+  
+  const user = await requireAuth();
+  dbg.textContent += '2. user: ' + (user ? user.id : 'NULL') + '\n';
+  if (!user) return;
 
-    try {
-      const res = await fetch('muscles.json');
-      muscleDB = await res.json();
-    } catch(e) { console.error('muscles.json failed', e); }
-
-    entries = await loadSessions(user.id);
-
-    const sel = document.getElementById('manual-muscle');
-    Object.entries(MUSCLE_NAMES).forEach(([key, name]) => {
-      const opt = document.createElement('option');
-      opt.value = key; opt.textContent = name;
-      sel.appendChild(opt);
-    });
-
-    computeFatigue();
-    renderDiagram();
-    renderStatusTable();
-    renderLastWorked();
-
-    document.getElementById('fatigue-subtitle').textContent =
-      'Updated from your log · ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  try {
+    const res = await fetch('muscles.json');
+    muscleDB = await res.json();
+    dbg.textContent += '3. muscles loaded: ' + Object.keys(muscleDB).length + '\n';
+  } catch(e) {
+    dbg.textContent += '3. muscles FAILED: ' + e + '\n';
   }
+
+  entries = await loadSessions(user.id);
+  dbg.textContent += '4. sessions: ' + entries.length + '\n';
+
+  const sel = document.getElementById('manual-muscle');
+  Object.entries(MUSCLE_NAMES).forEach(([key, name]) => {
+    const opt = document.createElement('option');
+    opt.value = key; opt.textContent = name;
+    sel.appendChild(opt);
+  });
+
+  computeFatigue();
+  renderDiagram();
+  renderStatusTable();
+  renderLastWorked();
+
+  document.getElementById('fatigue-subtitle').textContent =
+    'Updated from your log · ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  
+  dbg.textContent += '5. done\n';
+}
 
   function computeFatigue() {
     const now = new Date();
