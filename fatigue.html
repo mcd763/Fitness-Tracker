@@ -406,7 +406,7 @@ async function initFatigue() {
   if (!user) return;
 
   try {
-    const res = await fetch('muscles.json');
+    const res = await fetch('https://mcd763.github.io/Fitness-Tracker/muscles.json');
     muscleDB = await res.json();
     dbg.textContent += '3. muscles loaded: ' + Object.keys(muscleDB).length + '\n';
   } catch(e) {
