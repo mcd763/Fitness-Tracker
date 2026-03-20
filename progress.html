@@ -369,46 +369,53 @@
     container.innerHTML = html;
   }
 
-  async function recalculateAll() {
+async function recalculateAll() {
     const btn    = document.getElementById('recalc-btn');
     const status = document.getElementById('recalc-status');
-    const weighinData = await loadWeighins(currentUser.id);
-const latestWeight = weighinData.length > 0
-  ? [...weighinData].sort((a,b) => new Date(b.date)-new Date(a.date))[0].weight
-  : 154; // fallback lbs
-const weightKg = latestWeight * 0.453592;
-
-// Then in the loop:
-await calculateAndLogSessionXP(currentUser.id, session, muscleDB, {...rpgProfile, total_xp:0}, weightKg);
     btn.disabled = true;
     btn.textContent = 'Recalculating...';
     status.textContent = 'Clearing old XP...';
 
-    // Clear existing XP log for this user
-    await supabase.from('xp_log').delete().eq('user_id', currentUser.id);
+    // Load bodyweight for relative strength calculation
+    const weighinData  = await loadWeighins(currentUser.id);
+    const latestWeight = weighinData.length > 0
+      ? [...weighinData].sort((a,b) => new Date(b.date) - new Date(a.date))[0].weight
+      : 154;
+    const weightKg = latestWeight * 0.453592;
 
-    // Reset total XP
+    // Clear existing XP log for this user
+    await sb.from('xp_log').delete().eq('user_id', currentUser.id);
+
+    // Reset total XP on profile
     await saveRPGProfile(currentUser.id, { ...rpgProfile, total_xp: 0 });
+    rpgProfile.total_xp = 0;
 
     status.textContent = 'Processing ' + sessions.length + ' sessions...';
 
     let processed = 0;
     for (const session of sessions) {
-      await calculateAndLogSessionXP(currentUser.id, session, muscleDB, { ...rpgProfile, total_xp: 0 });
+      await calculateAndLogSessionXP(
+        currentUser.id,
+        session,
+        muscleDB,
+        { ...rpgProfile, total_xp: 0 },
+        weightKg
+      );
       processed++;
       status.textContent = 'Processed ' + processed + ' / ' + sessions.length + ' sessions...';
     }
 
-    // Reload
-    xpTotals  = await loadXPTotals(currentUser.id);
-    rpgProfile = await loadRPGProfile(currentUser.id);
+    // Reload everything
+    xpTotals   = await loadXPTotals(currentUser.id);
+    rpgProfile  = await loadRPGProfile(currentUser.id);
 
     renderIdentity();
     renderRadar();
     renderMuscleTiers();
+    renderAchievements();
 
-    btn.disabled    = false;
-    btn.textContent = 'Recalculate all sessions';
+    btn.disabled       = false;
+    btn.textContent    = 'Recalculate all sessions';
     status.textContent = '✓ Done — ' + processed + ' sessions processed';
   }
 
