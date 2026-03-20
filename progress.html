@@ -95,7 +95,7 @@
 </div>
 
 <script>
-  const TIER_COLORS = {
+const TIER_COLORS = {
     'Rookie':       '#555650',
     'Beginner':     '#2d5a1b',
     'Intermediate': '#7a6120',
@@ -106,82 +106,94 @@
   };
 
   const ACHIEVEMENTS_DEF = [
-    { id: 'first_session',    label: 'First Step',         desc: 'Log your first session',              icon: '🏁', check: (s,g) => s.length >= 1 },
-    { id: 'ten_sessions',     label: 'Getting Serious',    desc: 'Log 10 sessions',                     icon: '💪', check: (s,g) => s.length >= 10 },
-    { id: 'full_week',        label: 'Full Week',          desc: 'Hit all 4 weekly minimums in one week',icon: '✅', check: (s,g) => g.fullWeek },
-    { id: 'pull100',          label: 'Century Pull',       desc: '100 total pull-ups logged',           icon: '🔝', check: (s,g) => g.totalPullups >= 100 },
-    { id: 'pull500',          label: 'Pull-up Machine',    desc: '500 total pull-ups logged',           icon: '⚡', check: (s,g) => g.totalPullups >= 500 },
-    { id: 'stair60',          label: 'Hour on the Stairs', desc: 'Complete a 60min stair session',      icon: '🪜', check: (s,g) => g.maxStairDuration >= 60 },
-    { id: 'stair90',          label: 'Stair Warrior',      desc: 'Complete a 90min stair session',      icon: '🔥', check: (s,g) => g.maxStairDuration >= 90 },
-    { id: 'ruck3mi',          label: 'Pack Ready',         desc: 'Ruck 3+ miles with 45lb pack',        icon: '🎒', check: (s,g) => g.bestRuck },
-    { id: 'all_out_rookie',   label: 'No More Rookie',     desc: 'All muscle groups past Rookie tier',  icon: '🌱', check: (s,g) => g.allOutRookie },
-    { id: 'first_advanced',   label: 'Advanced',           desc: 'One muscle group reaches Advanced',   icon: '🎯', check: (s,g) => g.hasAdvanced },
-    { id: 'first_master',     label: 'Master Class',       desc: 'One muscle group reaches Master',     icon: '👑', check: (s,g) => g.hasMaster },
-    { id: 'streak_gtg',       label: 'GTG Streak',         desc: 'Hit GTG goal 5 days in a row',        icon: '🔄', check: (s,g) => g.gtgStreak >= 5 },
-    { id: 'thirty_sessions',  label: 'Committed',          desc: 'Log 30 sessions',                     icon: '🏆', check: (s,g) => s.length >= 30 },
+    { id:'first_session',   label:'First Step',         desc:'Log your first session',               icon:'🏁', check:(s,g) => s.length >= 1 },
+    { id:'ten_sessions',    label:'Getting Serious',     desc:'Log 10 sessions',                      icon:'💪', check:(s,g) => s.length >= 10 },
+    { id:'full_week',       label:'Full Week',           desc:'Hit all 4 weekly minimums in one week', icon:'✅', check:(s,g) => g.fullWeek },
+    { id:'pull100',         label:'Century Pull',        desc:'100 total pull-ups logged',            icon:'🔝', check:(s,g) => g.totalPullups >= 100 },
+    { id:'pull500',         label:'Pull-up Machine',     desc:'500 total pull-ups logged',            icon:'⚡', check:(s,g) => g.totalPullups >= 500 },
+    { id:'stair60',         label:'Hour on the Stairs',  desc:'Complete a 60min stair session',       icon:'🪜', check:(s,g) => g.maxStairDuration >= 60 },
+    { id:'stair90',         label:'Stair Warrior',       desc:'Complete a 90min stair session',       icon:'🔥', check:(s,g) => g.maxStairDuration >= 90 },
+    { id:'ruck3mi',         label:'Pack Ready',          desc:'Ruck 3+ miles with 45lb pack',         icon:'🎒', check:(s,g) => g.bestRuck },
+    { id:'all_out_rookie',  label:'No More Rookie',      desc:'All muscle groups past Rookie tier',   icon:'🌱', check:(s,g) => g.allOutRookie },
+    { id:'first_advanced',  label:'Advanced',            desc:'One muscle group reaches Advanced',    icon:'🎯', check:(s,g) => g.hasAdvanced },
+    { id:'first_master',    label:'Master Class',        desc:'One muscle group reaches Master',      icon:'👑', check:(s,g) => g.hasMaster },
+    { id:'streak_gtg',      label:'GTG Streak',          desc:'Hit GTG goal 5 days in a row',         icon:'🔄', check:(s,g) => g.gtgStreak >= 5 },
+    { id:'thirty_sessions', label:'Committed',           desc:'Log 30 sessions',                      icon:'🏆', check:(s,g) => s.length >= 30 },
   ];
 
-  let radarChart = null;
+  let radarChart  = null;
   let currentUser = null;
   let rpgProfile  = null;
   let xpTotals    = {};
   let sessions    = [];
   let muscleDB    = {};
   let gtgLog      = [];
+  let bodyweightKg = 70;
 
   async function initProgress() {
-    currentUser = await requireAuth();
-    if (!currentUser) return;
-
-    [rpgProfile, xpTotals, sessions] = await Promise.all([
-      loadRPGProfile(currentUser.id),
-      loadXPTotals(currentUser.id),
-      loadSessions(currentUser.id),
-    ]);
-
     try {
-      const res = await fetch('https://mcd763.github.io/Fitness-Tracker/muscles.json');
-      muscleDB = await res.json();
-    } catch(e) { console.error('muscles.json failed', e); }
+      currentUser = await requireAuth();
+      if (!currentUser) return;
 
-    const gtgData = await loadGTG(currentUser.id);
-    gtgLog = gtgData.pullups;
+      rpgProfile = await loadRPGProfile(currentUser.id);
+      xpTotals   = await loadXPTotals(currentUser.id);
+      sessions   = await loadSessions(currentUser.id);
 
-    renderIdentity();
-    renderRadar();
-    renderMuscleTiers();
-    renderAchievements();
+      try {
+        const res = await fetch('https://mcd763.github.io/Fitness-Tracker/muscles.json');
+        muscleDB = await res.json();
+        localStorage.setItem('muscles-cache', JSON.stringify(muscleDB));
+      } catch(e) {
+        const cached = localStorage.getItem('muscles-cache');
+        if (cached) muscleDB = JSON.parse(cached);
+        console.error('muscles.json failed, using cache', e);
+      }
 
-    document.getElementById('progress-subtitle').textContent =
-      'Last updated · ' + new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+      const gtgData = await loadGTG(currentUser.id);
+      gtgLog = gtgData.pullups;
+
+      const weighinData = await loadWeighins(currentUser.id);
+      if (weighinData.length > 0) {
+        const latest = [...weighinData].sort((a,b) => new Date(b.date)-new Date(a.date))[0];
+        bodyweightKg = latest.weight * 0.453592;
+      }
+
+      renderIdentity();
+      renderRadar();
+      renderMuscleTiers();
+      renderAchievements();
+
+      document.getElementById('progress-subtitle').textContent =
+        'Last updated · ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+    } catch(err) {
+      console.error('initProgress error:', err);
+      document.getElementById('progress-subtitle').textContent = 'Error: ' + err.message;
+    }
   }
 
   function renderIdentity() {
-    if (!rpgProfile) return;
+    if (!rpgProfile) {
+      document.getElementById('progress-subtitle').textContent = 'No class selected — complete onboarding first';
+      return;
+    }
     document.getElementById('subclass-display').textContent = rpgProfile.subclass || '—';
     document.getElementById('class-display').textContent =
       (rpgProfile.class_primary || '') + ' · ' + (rpgProfile.class_secondary || '');
-
     const totalXP = rpgProfile.total_xp || 0;
     const tier    = getTier(totalXP);
-    document.getElementById('overall-tier').textContent   = tier.name;
-    document.getElementById('overall-tier').style.color   = TIER_COLORS[tier.name] || 'var(--text-primary)';
-    document.getElementById('total-xp').textContent       = totalXP.toLocaleString() + ' XP';
+    document.getElementById('overall-tier').textContent = tier.name;
+    document.getElementById('overall-tier').style.color = TIER_COLORS[tier.name] || 'var(--text-primary)';
+    document.getElementById('total-xp').textContent     = totalXP.toLocaleString() + ' XP';
     document.getElementById('sessions-count').textContent = sessions.length;
   }
 
   function renderRadar() {
     const radarData = computeRadarData(xpTotals);
     const labels    = Object.keys(radarData);
-    const data      = labels.map(l => {
-      const xp  = radarData[l];
-      const idx = getTierIndex(xp);
-      return idx; // 0-6 scale
-    });
-
-    const ctx = document.getElementById('radar-chart');
+    const data      = labels.map(l => getTierIndex(radarData[l]));
+    const ctx       = document.getElementById('radar-chart');
     if (radarChart) radarChart.destroy();
-
     radarChart = new Chart(ctx, {
       type: 'radar',
       data: {
@@ -200,8 +212,7 @@
         responsive: true,
         scales: {
           r: {
-            min: 0,
-            max: 6,
+            min: 0, max: 6,
             ticks: {
               stepSize: 1,
               callback: v => XP_TIERS[v]?.name || '',
@@ -216,14 +227,7 @@
         },
         plugins: {
           legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: ctx => {
-                const idx = ctx.raw;
-                return XP_TIERS[idx]?.name || 'Rookie';
-              }
-            }
-          }
+          tooltip: { callbacks: { label: ctx => XP_TIERS[ctx.raw]?.name || 'Rookie' } }
         }
       }
     });
@@ -240,7 +244,6 @@
       glutes:'Glutes', glute_med:'Glute Med', quads:'Quads',
       hamstrings:'Hamstrings', calves:'Calves', hip_flexors:'Hip Flexors',
     };
-
     const groups = {
       'Chest & Shoulders': ['chest','front_delt','side_delt','rear_delt'],
       'Back':              ['lats','rhomboids','traps'],
@@ -248,31 +251,26 @@
       'Core':              ['abs','obliques','erector_spinae','quadratus_lumborum'],
       'Lower Body':        ['quads','hamstrings','glutes','glute_med','calves','hip_flexors'],
     };
-
     let html = '';
     Object.entries(groups).forEach(([group, muscles]) => {
       html += `<div style="margin-bottom:12px;">
-        <div style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-label); margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid var(--border-primary);">${group}</div>`;
-
+        <div style="font-family:var(--font-display);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-label);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border-primary);">${group}</div>`;
       muscles.forEach(muscle => {
         const xp      = xpTotals[muscle] || 0;
         const tier    = getTier(xp);
         const tierIdx = getTierIndex(xp);
         const nextTier= XP_TIERS[tierIdx + 1];
-        const pct     = nextTier
-          ? Math.round(((xp - tier.min) / (nextTier.min - tier.min)) * 100)
-          : 100;
+        const pct     = nextTier ? Math.round(((xp - tier.min) / (nextTier.min - tier.min)) * 100) : 100;
         const color   = TIER_COLORS[tier.name] || '#555650';
-
         html += `
-          <div style="padding:6px 0; border-bottom:1px solid var(--border-primary);">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
-              <span style="flex:1; font-size:12px; color:var(--text-primary);">${MUSCLE_NAMES[muscle]}</span>
-              <span style="font-size:11px; color:${color}; font-family:var(--font-display); font-weight:600;">${tier.name}</span>
-              <span style="font-size:11px; color:var(--text-tertiary); min-width:60px; text-align:right;">${xp.toLocaleString()} XP</span>
+          <div style="padding:6px 0;border-bottom:1px solid var(--border-primary);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+              <span style="flex:1;font-size:12px;color:var(--text-primary);">${MUSCLE_NAMES[muscle]}</span>
+              <span style="font-size:11px;color:${color};font-family:var(--font-display);font-weight:600;">${tier.name}</span>
+              <span style="font-size:11px;color:var(--text-tertiary);min-width:60px;text-align:right;">${xp.toLocaleString()} XP</span>
             </div>
-            <div style="background:var(--bg-card-alt); border-radius:2px; height:4px; overflow:hidden;">
-              <div style="height:100%; background:${color}; width:${pct}%; border-radius:2px; transition:width 0.4s;"></div>
+            <div style="background:var(--bg-card-alt);border-radius:2px;height:4px;overflow:hidden;">
+              <div style="height:100%;background:${color};width:${pct}%;border-radius:2px;transition:width 0.4s;"></div>
             </div>
           </div>`;
       });
@@ -282,130 +280,95 @@
   }
 
   function computeGoals() {
-    // Compute all achievement goal values from sessions and gtgLog
-    const totalPullups = gtgLog.reduce((s, e) => s + e.reps, 0);
-
-    const maxStairDuration = Math.max(0, ...sessions
-      .filter(s => s.type === 'Stairs')
-      .map(s => parseFloat(s.duration) || 0)
-    );
-
+    const totalPullups = gtgLog.reduce((s,e) => s + e.reps, 0);
+    const maxStairDuration = sessions.filter(s => s.type==='Stairs')
+      .reduce((max,s) => Math.max(max, parseFloat(s.duration)||0), 0);
     const bestRuck = sessions.some(s => {
       if (s.type !== 'Ruck' || !s.ruckData) return false;
-      const d = parseFloat(s.ruckData.distance) || 0;
-      const w = parseFloat(s.ruckData.weight)   || 0;
-      return d >= 3 && w >= 45;
+      return (parseFloat(s.ruckData.distance)||0) >= 3 && (parseFloat(s.ruckData.weight)||0) >= 45;
     });
-
-    // Full week check
     const weekMap = {};
     sessions.forEach(s => {
       const d = new Date(s.date + 'T00:00:00');
-      const weekKey = `${d.getFullYear()}-${Math.floor(d.getDate() / 7)}`;
-      if (!weekMap[weekKey]) weekMap[weekKey] = { upper:false, lower:false, stairs:false, run:false };
-      if (s.type === 'Upper Day')                weekMap[weekKey].upper  = true;
-      if (s.type === 'Lower Day')                weekMap[weekKey].lower  = true;
-      if (['Stairs','Sandbag'].includes(s.type)) weekMap[weekKey].stairs = true;
-      if (['Run','Ruck'].includes(s.type))       weekMap[weekKey].run    = true;
+      const wk = `${d.getFullYear()}-W${Math.floor((d - new Date(d.getFullYear(),0,1))/604800000)}`;
+      if (!weekMap[wk]) weekMap[wk] = { upper:false, lower:false, stairs:false, run:false };
+      if (s.type === 'Upper Day')                weekMap[wk].upper  = true;
+      if (s.type === 'Lower Day')                weekMap[wk].lower  = true;
+      if (['Stairs','Sandbag'].includes(s.type)) weekMap[wk].stairs = true;
+      if (['Run','Ruck'].includes(s.type))       weekMap[wk].run    = true;
     });
-    const fullWeek = Object.values(weekMap).some(w => w.upper && w.lower && w.stairs && w.run);
-
-    const allOutRookie  = Object.values(xpTotals).every(xp => xp >= 500);
-    const hasAdvanced   = Object.values(xpTotals).some(xp => xp >= 5000);
-    const hasMaster     = Object.values(xpTotals).some(xp => xp >= 20000);
-
-    // GTG streak
-    const gtgByDay = {};
-    gtgLog.forEach(e => { gtgByDay[e.date] = (gtgByDay[e.date] || 0) + e.reps; });
-    const goal = parseInt(localStorage.getItem('gtg-goal') || '15');
-    const days = Object.keys(gtgByDay).sort();
-    let gtgStreak = 0, maxStreak = 0, cur = 0;
-    days.forEach(d => {
+    const fullWeek     = Object.values(weekMap).some(w => w.upper && w.lower && w.stairs && w.run);
+    const allOutRookie = Object.values(xpTotals).length > 0 && Object.values(xpTotals).every(xp => xp >= 500);
+    const hasAdvanced  = Object.values(xpTotals).some(xp => xp >= 5000);
+    const hasMaster    = Object.values(xpTotals).some(xp => xp >= 20000);
+    const gtgByDay     = {};
+    gtgLog.forEach(e => { gtgByDay[e.date] = (gtgByDay[e.date]||0) + e.reps; });
+    const goal = parseInt(localStorage.getItem('gtg-goal')||'15');
+    let maxStreak = 0, cur = 0;
+    Object.keys(gtgByDay).sort().forEach(d => {
       if (gtgByDay[d] >= goal) { cur++; maxStreak = Math.max(maxStreak, cur); }
       else cur = 0;
     });
-    gtgStreak = maxStreak;
-
-    return { totalPullups, maxStairDuration, bestRuck, fullWeek, allOutRookie, hasAdvanced, hasMaster, gtgStreak };
+    return { totalPullups, maxStairDuration, bestRuck, fullWeek, allOutRookie, hasAdvanced, hasMaster, gtgStreak: maxStreak };
   }
 
   function renderAchievements() {
     const goals     = computeGoals();
     const container = document.getElementById('achievements-list');
-    const earned    = new Set((rpgProfile?.achievements || []).map(a => a.id));
-
-    // Check new ones
-    const newlyEarned = [];
-    ACHIEVEMENTS_DEF.forEach(a => {
-      if (!earned.has(a.id) && a.check(sessions, goals)) {
-        newlyEarned.push(a.id);
-      }
-    });
-
-    // Save newly earned
+    const earned    = new Set((rpgProfile?.achievements||[]).map(a => a.id));
+    const newlyEarned = ACHIEVEMENTS_DEF
+      .filter(a => !earned.has(a.id) && a.check(sessions, goals))
+      .map(a => a.id);
     if (newlyEarned.length > 0 && rpgProfile) {
       const updated = [
-        ...(rpgProfile.achievements || []),
+        ...(rpgProfile.achievements||[]),
         ...newlyEarned.map(id => ({ id, earned_at: new Date().toISOString() }))
       ];
       saveRPGProfile(currentUser.id, { ...rpgProfile, achievements: updated });
       rpgProfile.achievements = updated;
       newlyEarned.forEach(id => earned.add(id));
     }
-
     let html = '';
     ACHIEVEMENTS_DEF.forEach(a => {
       const isEarned = earned.has(a.id);
       html += `
-        <div style="display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border-primary); opacity:${isEarned ? '1' : '0.35'};">
-          <span style="font-size:20px; flex-shrink:0;">${a.icon}</span>
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-primary);opacity:${isEarned?'1':'0.35'};">
+          <span style="font-size:20px;flex-shrink:0;">${a.icon}</span>
           <div style="flex:1;">
-            <div style="font-size:12px; color:${isEarned ? 'var(--text-primary)' : 'var(--text-tertiary)'}; font-weight:500;">${a.label}</div>
-            <div style="font-size:11px; color:var(--text-tertiary);">${a.desc}</div>
+            <div style="font-size:12px;color:${isEarned?'var(--text-primary)':'var(--text-tertiary)'};font-weight:500;">${a.label}</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">${a.desc}</div>
           </div>
-          ${isEarned ? `<span style="font-size:10px; color:var(--accent-grip-text); font-family:var(--font-display); font-weight:600;">EARNED</span>` : ''}
+          ${isEarned?`<span style="font-size:10px;color:var(--accent-grip-text);font-family:var(--font-display);font-weight:600;">EARNED</span>`:''}
         </div>`;
     });
     container.innerHTML = html;
   }
 
-async function recalculateAll() {
+  async function recalculateAll() {
     const btn    = document.getElementById('recalc-btn');
     const status = document.getElementById('recalc-status');
-    btn.disabled = true;
+    btn.disabled    = true;
     btn.textContent = 'Recalculating...';
-    status.textContent = 'Clearing old XP...';
+    status.textContent = 'Loading weighins...';
 
-    // Load bodyweight for relative strength calculation
     const weighinData  = await loadWeighins(currentUser.id);
     const latestWeight = weighinData.length > 0
-      ? [...weighinData].sort((a,b) => new Date(b.date) - new Date(a.date))[0].weight
+      ? [...weighinData].sort((a,b) => new Date(b.date)-new Date(a.date))[0].weight
       : 154;
     const weightKg = latestWeight * 0.453592;
 
-    // Clear existing XP log for this user
-    await sb.from('xp_log').delete().eq('user_id', currentUser.id);
-
-    // Reset total XP on profile
+    status.textContent = 'Clearing old XP...';
     await saveRPGProfile(currentUser.id, { ...rpgProfile, total_xp: 0 });
     rpgProfile.total_xp = 0;
 
     status.textContent = 'Processing ' + sessions.length + ' sessions...';
-
     let processed = 0;
     for (const session of sessions) {
-      await calculateAndLogSessionXP(
-        currentUser.id,
-        session,
-        muscleDB,
-        { ...rpgProfile, total_xp: 0 },
-        weightKg
-      );
+      await calculateAndLogSessionXP(currentUser.id, session, muscleDB, { ...rpgProfile, total_xp: 0 }, weightKg);
       processed++;
       status.textContent = 'Processed ' + processed + ' / ' + sessions.length + ' sessions...';
     }
 
-    // Reload everything
     xpTotals   = await loadXPTotals(currentUser.id);
     rpgProfile  = await loadRPGProfile(currentUser.id);
 
@@ -419,17 +382,16 @@ async function recalculateAll() {
     status.textContent = '✓ Done — ' + processed + ' sessions processed';
   }
 
-  // Theme
   const themes = ['dark','light','purple','blue','red'];
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
     const btn = document.getElementById('theme-toggle');
-    if (btn) btn.textContent = themes[(themes.indexOf(theme) + 1) % themes.length];
+    if (btn) btn.textContent = themes[(themes.indexOf(theme)+1) % themes.length];
   }
   function toggleTheme() {
     const current = localStorage.getItem('theme') || 'dark';
-    applyTheme(themes[(themes.indexOf(current) + 1) % themes.length]);
+    applyTheme(themes[(themes.indexOf(current)+1) % themes.length]);
   }
   applyTheme(localStorage.getItem('theme') || 'dark');
 

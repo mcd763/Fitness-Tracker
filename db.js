@@ -218,7 +218,7 @@ async function migrateFromLocalStorage(userId) {
 }
 
 async function loadRPGProfile(userId) {
-  const { data, error } = await supabase
+  const { data, error } = await sb  // was: supabase
     .from('profile_rpg')
     .select('*')
     .eq('user_id', userId)
@@ -228,7 +228,7 @@ async function loadRPGProfile(userId) {
 }
 
 async function saveRPGProfile(userId, profile) {
-  const { data, error } = await supabase
+  const { data, error } = await sb  // was: supabase
     .from('profile_rpg')
     .upsert({ user_id: userId, ...profile, updated_at: new Date().toISOString() });
   if (error) { console.error('saveRPGProfile error', error); return null; }
@@ -236,19 +236,18 @@ async function saveRPGProfile(userId, profile) {
 }
 
 async function logXP(userId, entries) {
-  // entries = array of { muscle, xp_type, amount, source_id, source_type }
   const rows = entries.map(e => ({ user_id: userId, ...e }));
-  const { error } = await supabase.from('xp_log').insert(rows);
+  const { error } = await sb  // was: supabase
+    .from('xp_log').insert(rows);
   if (error) console.error('logXP error', error);
 }
 
 async function loadXPTotals(userId) {
-  const { data, error } = await supabase
+  const { data, error } = await sb  // was: supabase
     .from('xp_log')
     .select('muscle, xp_type, amount')
     .eq('user_id', userId);
   if (error) return {};
-  // Sum XP per muscle
   const totals = {};
   data.forEach(row => {
     if (!totals[row.muscle]) totals[row.muscle] = 0;
