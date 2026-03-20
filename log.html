@@ -84,6 +84,8 @@
         border-radius: var(--radius-tag);
       ">Fatigue</a>
 
+      <a href="progress.html" style="font-family:var(--font-display); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-secondary); text-decoration:none; padding:5px 12px; border:1px solid var(--border-primary); border-radius:var(--radius-tag);">Progress</a>
+
       <button id="theme-toggle" onclick="toggleTheme()" style="
         margin-left: auto;
         font-family: var(--font-display);
@@ -1153,6 +1155,18 @@
 
     const session = { date, type, duration, notes, exercises: [...stagedExercises], runData, stairsData, ruckData };
     await saveSession(currentUser.id, session);
+    const rpgProf = await loadRPGProfile(currentUser.id);
+const latestWeight = weighins.length > 0
+  ? [...weighins].sort((a,b) => new Date(b.date)-new Date(a.date))[0].weight
+  : 70;
+const weightKg = weightUnit === 'kg' ? latestWeight : latestWeight * 0.453592;
+const mdb = JSON.parse(localStorage.getItem('muscles-cache') || '{}');
+if (Object.keys(mdb).length > 0) {
+  await calculateAndLogSessionXP(currentUser.id, session, mdb, rpgProf, weightKg);
+}
+    if (Object.keys(mdb).length > 0) {
+      await calculateAndLogSessionXP(currentUser.id, session, mdb, rpgProf);
+    }
     entries.push(session);
     render();
 
