@@ -27,6 +27,18 @@
       white-space: nowrap;
     }
   </style>
+  <link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#1a1c17" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="FitTracker" />
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/Fitness-Tracker/sw.js');
+    });
+  }
+</script>
 </head>
 <body>
   <div id="debug" style="background:#300; color:#f99; font-size:11px; padding:8px; margin-bottom:10px; border-radius:4px; word-break:break-all;"></div>
