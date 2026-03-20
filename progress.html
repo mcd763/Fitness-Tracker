@@ -140,7 +140,7 @@
     ]);
 
     try {
-      const res = await fetch('muscles.json');
+      const res = await fetch('https://mcd763.github.io/Fitness-Tracker/muscles.json');
       muscleDB = await res.json();
     } catch(e) { console.error('muscles.json failed', e); }
 
