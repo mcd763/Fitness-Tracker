@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Choose Your Class</title>
+  <link rel="stylesheet" href="workout.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1a1c17" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="FitTracker" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="db.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/Fitness-Tracker/sw.js');
+      });
+    }
+  </script>
+</head>
+<body>
+<div class="page">
+
+  <header class="page-header" style="margin-bottom:2rem;">
+    <h1>Choose Your Class</h1>
+    <p>Pick 2 classes that match your training identity. Your choices shape how XP is earned.</p>
+  </header>
+
+  <!-- CLASS GRID -->
+  <div id="class-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+
+    <div class="class-card card" data-class="Warrior" onclick="toggleClass('Warrior')" style="cursor:pointer; transition:all 0.2s;">
+      <div style="font-size:24px; margin-bottom:8px;">⚔️</div>
+      <p class="section-label">Warrior</p>
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Raw strength. Heavy compounds. Power XP +25%.</p>
+      <div style="font-size:10px; color:var(--text-tertiary);">Bench · Squat · Deadlift</div>
+    </div>
+
+    <div class="class-card card" data-class="Scout" onclick="toggleClass('Scout')" style="cursor:pointer; transition:all 0.2s;">
+      <div style="font-size:24px; margin-bottom:8px;">🏔️</div>
+      <p class="section-label">Scout</p>
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Endurance. Pack test ready. Persistence XP +25%.</p>
+      <div style="font-size:10px; color:var(--text-tertiary);">Stairs · Ruck · Run</div>
+    </div>
+
+    <div class="class-card card" data-class="Ranger" onclick="toggleClass('Ranger')" style="cursor:pointer; transition:all 0.2s;">
+      <div style="font-size:24px; margin-bottom:8px;">🎯</div>
+      <p class="section-label">Ranger</p>
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Balanced. No weakness. All XP +10%.</p>
+      <div style="font-size:10px; color:var(--text-tertiary);">Upper · Lower · Cardio</div>
+    </div>
+
+    <div class="class-card card" data-class="Monk" onclick="toggleClass('Monk')" style="cursor:pointer; transition:all 0.2s;">
+      <div style="font-size:24px; margin-bottom:8px;">🧘</div>
+      <p class="section-label">Monk</p>
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Bodyweight mastery. GTG specialist. Bodyweight XP +25%.</p>
+      <div style="font-size:10px; color:var(--text-tertiary);">Pull-ups · Push-ups · GTG</div>
+    </div>
+
+    <div class="class-card card" data-class="Brawler" onclick="toggleClass('Brawler')" style="cursor:pointer; transition:all 0.2s; grid-column: span 2;">
+      <div style="font-size:24px; margin-bottom:8px;">💪</div>
+      <p class="section-label">Brawler</p>
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Functional strength. Odd objects. Sandbag XP +25%.</p>
+      <div style="font-size:10px; color:var(--text-tertiary);">Sandbag · Carries · Axe Work</div>
+    </div>
+
+  </div>
+
+  <!-- SUBCLASS REVEAL -->
+  <div id="subclass-card" class="card" style="display:none; margin-bottom:24px; text-align:center;">
+    <p class="section-label">Your Subclass</p>
+    <div id="subclass-name" style="font-family:var(--font-display); font-size:32px; font-weight:700; color:var(--accent-fire-text); margin:8px 0;"></div>
+    <div id="subclass-desc" style="font-size:12px; color:var(--text-secondary);"></div>
+    <div id="subclass-bonus" style="margin-top:10px; font-size:11px; color:var(--text-tertiary);"></div>
+  </div>
+
+  <!-- CONFIRM -->
+  <button id="confirm-btn" onclick="confirmClass()" style="
+    display:none; width:100%;
+    background:var(--accent-fire-bg); border:1px solid var(--accent-fire);
+    border-radius:var(--radius-tag); color:var(--accent-fire-text);
+    font-family:var(--font-display); font-size:13px; font-weight:600;
+    letter-spacing:0.08em; text-transform:uppercase;
+    padding:14px; cursor:pointer; margin-bottom:12px;
+  ">Begin Your Journey →</button>
+
+  <p id="select-hint" style="text-align:center; font-size:12px; color:var(--text-tertiary);">Select 2 classes to reveal your subclass</p>
+
+</div>
+
+<script>
+  const SUBCLASSES = {
+    'Warrior+Scout':  { name:'Ironclad',   desc:'Strength meets endurance. Built for the long haul.' },
+    'Warrior+Monk':   { name:'Warlord',    desc:'Brute force refined by bodyweight mastery.' },
+    'Warrior+Ranger': { name:'Gladiator',  desc:'Powerful and balanced. A complete athlete.' },
+    'Warrior+Brawler':{ name:'Berserker',  desc:'Unstoppable force. Raw power in any form.' },
+    'Scout+Monk':     { name:'Pathfinder', desc:'Light, fast, and enduring. Built for the trail.' },
+    'Scout+Ranger':   { name:'Wayfarer',   desc:'Covers ground. Covers all bases.' },
+    'Scout+Brawler':  { name:'Roughneck',  desc:'Tough as nails. Works hard in any terrain.' },
+    'Ranger+Monk':    { name:'Sentinel',   desc:'Disciplined and complete. Nothing gets past you.' },
+    'Ranger+Brawler': { name:'Vanguard',   desc:'Leads from the front. Functional and fearless.' },
+    'Monk+Brawler':   { name:'Savage',     desc:'Bodyweight brutality. Pure functional power.' },
+  };
+
+  const CLASS_BONUSES = {
+    Warrior:  'Power XP +25%',
+    Scout:    'Persistence XP +25% · Stair/Ruck sessions worth more',
+    Ranger:   'All XP +10%',
+    Monk:     'Bodyweight XP +25% · GTG worth more',
+    Brawler:  'Sandbag/Functional XP +25%',
+  };
+
+  let selected = [];
+  let currentUser = null;
+
+  async function init() {
+    currentUser = await requireAuth();
+    if (!currentUser) return;
+
+    // Check if already set up
+    const profile = await loadRPGProfile(currentUser.id);
+    if (profile && profile.class_primary) {
+      window.location.href = 'log.html';
+    }
+  }
+
+  function toggleClass(cls) {
+    const card = document.querySelector(`[data-class="${cls}"]`);
+    if (selected.includes(cls)) {
+      selected = selected.filter(c => c !== cls);
+      card.style.borderColor = 'var(--border-primary)';
+      card.style.background  = 'var(--bg-card)';
+    } else {
+      if (selected.length >= 2) {
+        // Deselect the first one
+        const old = selected.shift();
+        const oldCard = document.querySelector(`[data-class="${old}"]`);
+        oldCard.style.borderColor = 'var(--border-primary)';
+        oldCard.style.background  = 'var(--bg-card)';
+      }
+      selected.push(cls);
+      card.style.borderColor = 'var(--accent-fire)';
+      card.style.background  = 'var(--accent-fire-bg)';
+    }
+    updateSubclass();
+  }
+
+  function updateSubclass() {
+    const subclassCard = document.getElementById('subclass-card');
+    const confirmBtn   = document.getElementById('confirm-btn');
+    const hint         = document.getElementById('select-hint');
+
+    if (selected.length === 2) {
+      const key = selected.slice().sort().join('+');
+      const sub = SUBCLASSES[key] || { name: selected.join(' / '), desc: 'A unique combination.' };
+
+      document.getElementById('subclass-name').textContent = sub.name;
+      document.getElementById('subclass-desc').textContent = sub.desc;
+      document.getElementById('subclass-bonus').textContent =
+        CLASS_BONUSES[selected[0]] + '\n' + CLASS_BONUSES[selected[1]];
+
+      subclassCard.style.display = 'block';
+      confirmBtn.style.display   = 'block';
+      hint.style.display         = 'none';
+    } else {
+      subclassCard.style.display = 'none';
+      confirmBtn.style.display   = 'none';
+      hint.style.display         = 'block';
+    }
+  }
+
+  async function confirmClass() {
+    if (selected.length !== 2) return;
+    const key = selected.slice().sort().join('+');
+    const sub = SUBCLASSES[key] || { name: selected.join(' / '), desc: '' };
+
+    await saveRPGProfile(currentUser.id, {
+      class_primary:   selected[0],
+      class_secondary: selected[1],
+      subclass:        sub.name,
+      total_xp:        0,
+      achievements:    [],
+    });
+
+    window.location.href = 'log.html';
+  }
+
+  const themes = ['dark','light','purple','blue','red'];
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }
+  applyTheme(localStorage.getItem('theme') || 'dark');
+
+  init();
+</script>
+</body>
+</html>

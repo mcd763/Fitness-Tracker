@@ -6,17 +6,17 @@
   <title>Login — Workout Tracker</title>
   <link rel="stylesheet" href="workout.css" />
   <link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#1a1c17" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="FitTracker" />
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/Fitness-Tracker/sw.js');
-    });
-  }
-</script>
+  <meta name="theme-color" content="#1a1c17" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="FitTracker" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/Fitness-Tracker/sw.js');
+      });
+    }
+  </script>
 </head>
 <body>
   <div class="page" style="max-width:400px;">
@@ -64,6 +64,7 @@
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js"></script>
 <script>
   const SUPABASE_URL = 'https://mrckiobnrykxmunpysqf.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_wJ8a8fiYNnSgtg6DC3IYqQ_8Ec5TlRo';
@@ -71,16 +72,25 @@
 
   let mode = 'signin';
 
-  // If already logged in go straight to the app
+  async function routeAfterLogin(userId) {
+    const profile = await loadRPGProfile(userId);
+    if (!profile || !profile.class_primary) {
+      window.location.href = 'onboarding.html';
+    } else {
+      window.location.href = 'log.html';
+    }
+  }
+
+  // If already logged in, check RPG profile and route
   sb.auth.getSession().then(({ data }) => {
-    if (data.session) window.location.href = 'workout.html';
+    if (data.session) routeAfterLogin(data.session.user.id);
   });
 
   function toggleMode() {
     mode = mode === 'signin' ? 'signup' : 'signin';
-    document.getElementById('auth-mode-label').textContent  = mode === 'signin' ? 'Sign In' : 'Sign Up';
-    document.getElementById('auth-submit').textContent      = mode === 'signin' ? 'Sign In' : 'Sign Up';
-    document.getElementById('auth-toggle-btn').textContent  = mode === 'signin' ? 'Need an account? Sign up' : 'Already have an account? Sign in';
+    document.getElementById('auth-mode-label').textContent = mode === 'signin' ? 'Sign In' : 'Sign Up';
+    document.getElementById('auth-submit').textContent     = mode === 'signin' ? 'Sign In' : 'Sign Up';
+    document.getElementById('auth-toggle-btn').textContent = mode === 'signin' ? 'Need an account? Sign up' : 'Already have an account? Sign in';
     document.getElementById('auth-error').style.display = 'none';
   }
 
@@ -100,11 +110,11 @@
     btn.textContent = '...';
     btn.disabled = true;
 
-    let error;
+    let error, data;
     if (mode === 'signin') {
-      ({ error } = await sb.auth.signInWithPassword({ email, password }));
+      ({ error, data } = await sb.auth.signInWithPassword({ email, password }));
     } else {
-      ({ error } = await sb.auth.signUp({ email, password }));
+      ({ error, data } = await sb.auth.signUp({ email, password }));
     }
 
     btn.disabled = false;
@@ -119,17 +129,15 @@
         errEl.textContent = 'Check your email to confirm your account, then sign in.';
         errEl.style.display = 'block';
       } else {
-        window.location.href = 'workout.html';
+        await routeAfterLogin(data.user.id);
       }
     }
   }
 
-  // Allow Enter key to submit
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter') handleAuth();
   });
 
-  // Apply saved theme
   const themes = ['dark','light','purple','blue','red'];
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
