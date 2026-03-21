@@ -72,14 +72,9 @@
 
   let mode = 'signin';
 
-  async function routeAfterLogin(userId) {
-    const profile = await loadRPGProfile(userId);
-    if (!profile || !profile.class_primary) {
-      window.location.href = 'onboarding.html';
-    } else {
-      window.location.href = 'log.html';
-    }
-  }
+async function routeAfterLogin(userId) {
+  window.location.href = 'log.html';
+}
 
   // If already logged in, check RPG profile and route
   sb.auth.getSession().then(({ data }) => {
