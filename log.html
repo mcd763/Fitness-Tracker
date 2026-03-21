@@ -26,95 +26,20 @@
 
     <!-- NAV -->
     <nav style="
-      display: flex;
-      gap: 10px;
-      margin-bottom: 2rem;
-      border-bottom: 1px solid var(--border-primary);
-      padding-bottom: 1rem;
-    ">
-      <a href="workout.html" style="
-        font-family: var(--font-display);
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--text-secondary);
-        text-decoration: none;
-        padding: 5px 12px;
-        border: 1px solid var(--border-primary);
-        border-radius: var(--radius-tag);
-      ">← Plan</a>
-      <a href="log.html" style="
-        font-family: var(--font-display);
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--accent-fire-text);
-        text-decoration: none;
-        padding: 5px 12px;
-        border: 1px solid var(--accent-fire);
-        border-radius: var(--radius-tag);
-        background: var(--accent-fire-bg);
-      ">Log</a>
-
-      <a href="summary.html" style="
-        font-family: var(--font-display);
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--text-secondary);
-        text-decoration: none;
-        padding: 5px 12px;
-        border: 1px solid var(--border-primary);
-        border-radius: var(--radius-tag);
-      ">Summary</a>
-
-      <a href="fatigue.html" style="
-        font-family: var(--font-display);
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--text-secondary);
-        text-decoration: none;
-        padding: 5px 12px;
-        border: 1px solid var(--border-primary);
-        border-radius: var(--radius-tag);
-      ">Fatigue</a>
-
-      <a href="progress.html" style="font-family:var(--font-display); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-secondary); text-decoration:none; padding:5px 12px; border:1px solid var(--border-primary); border-radius:var(--radius-tag);">Progress</a>
-
-      <button id="theme-toggle" onclick="toggleTheme()" style="
-        margin-left: auto;
-        font-family: var(--font-display);
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        padding: 5px 12px;
-        border-radius: var(--radius-tag);
-        cursor: pointer;
-        background: none;
-        border: 1px solid var(--border-primary);
-        color: var(--text-secondary);
-      ">Light</button>
-
-      <button onclick="signOut()" style="
-        font-family: var(--font-display);
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        padding: 5px 12px;
-        border-radius: var(--radius-tag);
-        cursor: pointer;
-        background: none;
-        border: 1px solid var(--border-primary);
-        color: var(--text-tertiary);
-      ">Sign out</button>
-    </nav>
+  display:flex; gap:8px; margin-bottom:2rem;
+  border-bottom:1px solid var(--border-primary);
+  padding-bottom:1rem; flex-wrap:wrap;
+">
+  <a href="log.html" style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-secondary); text-decoration:none; padding:4px 10px; border:1px solid var(--border-primary); border-radius:var(--radius-tag);">Log</a>
+  <a href="summary.html" style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-secondary); text-decoration:none; padding:4px 10px; border:1px solid var(--border-primary); border-radius:var(--radius-tag);">Summary</a>
+  <a href="fatigue.html" style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-secondary); text-decoration:none; padding:4px 10px; border:1px solid var(--border-primary); border-radius:var(--radius-tag);">Fatigue</a>
+  <a href="progress.html" style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-secondary); text-decoration:none; padding:4px 10px; border:1px solid var(--border-primary); border-radius:var(--radius-tag);">Progress</a>
+  <a href="workout.html" style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-secondary); text-decoration:none; padding:4px 10px; border:1px solid var(--border-primary); border-radius:var(--radius-tag);">Plan</a>
+  <div style="display:flex; gap:6px; margin-left:auto;">
+    <button id="theme-toggle" onclick="toggleTheme()" style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:4px 10px; border-radius:var(--radius-tag); cursor:pointer; background:none; border:1px solid var(--border-primary); color:var(--text-secondary);">Light</button>
+    <button onclick="signOut()" style="font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:4px 10px; border-radius:var(--radius-tag); cursor:pointer; background:none; border:1px solid var(--border-primary); color:var(--text-tertiary);">Out</button>
+  </div>
+</nav>
 
     <!-- HEADER -->
     <header class="page-header">

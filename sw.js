@@ -1,4 +1,4 @@
-const CACHE = 'fittracker-v1';
+const CACHE = 'fittracker-v2';  // was v1
 const STATIC = [
   '/Fitness-Tracker/',
   '/Fitness-Tracker/login.html',
@@ -6,10 +6,14 @@ const STATIC = [
   '/Fitness-Tracker/log.html',
   '/Fitness-Tracker/summary.html',
   '/Fitness-Tracker/fatigue.html',
+  '/Fitness-Tracker/progress.html',
+  '/Fitness-Tracker/onboarding.html',
   '/Fitness-Tracker/workout.css',
   '/Fitness-Tracker/db.js',
   '/Fitness-Tracker/muscles.json',
   '/Fitness-Tracker/manifest.json',
+  '/Fitness-Tracker/icon-192.png',
+  '/Fitness-Tracker/icon-512.png',
 ];
 
 self.addEventListener('install', e => {
