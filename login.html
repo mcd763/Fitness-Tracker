@@ -64,7 +64,6 @@
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="db.js"></script>
 <script>
   const SUPABASE_URL = 'https://mrckiobnrykxmunpysqf.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_wJ8a8fiYNnSgtg6DC3IYqQ_8Ec5TlRo';
@@ -72,20 +71,19 @@
 
   let mode = 'signin';
 
-async function routeAfterLogin(userId) {
-  window.location.href = 'log.html';
-}
+  async function routeAfterLogin() {
+    window.location.href = 'log.html';
+  }
 
-  // If already logged in, check RPG profile and route
   sb.auth.getSession().then(({ data }) => {
-    if (data.session) routeAfterLogin(data.session.user.id);
+    if (data.session) routeAfterLogin();
   });
 
   function toggleMode() {
     mode = mode === 'signin' ? 'signup' : 'signin';
-    document.getElementById('auth-mode-label').textContent = mode === 'signin' ? 'Sign In' : 'Sign Up';
-    document.getElementById('auth-submit').textContent     = mode === 'signin' ? 'Sign In' : 'Sign Up';
-    document.getElementById('auth-toggle-btn').textContent = mode === 'signin' ? 'Need an account? Sign up' : 'Already have an account? Sign in';
+    document.getElementById('auth-mode-label').textContent  = mode === 'signin' ? 'Sign In' : 'Sign Up';
+    document.getElementById('auth-submit').textContent      = mode === 'signin' ? 'Sign In' : 'Sign Up';
+    document.getElementById('auth-toggle-btn').textContent  = mode === 'signin' ? 'Need an account? Sign up' : 'Already have an account? Sign in';
     document.getElementById('auth-error').style.display = 'none';
   }
 
@@ -124,7 +122,7 @@ async function routeAfterLogin(userId) {
         errEl.textContent = 'Check your email to confirm your account, then sign in.';
         errEl.style.display = 'block';
       } else {
-        await routeAfterLogin(data.user.id);
+        await routeAfterLogin();
       }
     }
   }
