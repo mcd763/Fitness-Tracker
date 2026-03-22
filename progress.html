@@ -395,10 +395,15 @@ const TIER_COLORS = {
     const btn = document.getElementById('theme-toggle');
     if (btn) btn.textContent = themes[(themes.indexOf(theme)+1) % themes.length];
   }
-  function toggleTheme() {
-    const current = localStorage.getItem('theme') || 'dark';
-    applyTheme(themes[(themes.indexOf(current)+1) % themes.length]);
+function toggleTheme() {
+  const current = localStorage.getItem('theme') || 'dark';
+  const next = themes[(themes.indexOf(current) + 1) % themes.length];
+  applyTheme(next);
+  // Save to Supabase if user is logged in
+  if (typeof currentUser !== 'undefined' && currentUser) {
+    savePreferences(currentUser.id, { theme: next });
   }
+}
   applyTheme(localStorage.getItem('theme') || 'dark');
 
   initProgress();

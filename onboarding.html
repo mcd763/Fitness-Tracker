@@ -92,18 +92,17 @@
 
 <script>
   const SUBCLASSES = {
-    'Warrior+Scout':  { name:'Ironclad',   desc:'Strength meets endurance. Built for the long haul.' },
-    'Warrior+Monk':   { name:'Warlord',    desc:'Brute force refined by bodyweight mastery.' },
-    'Warrior+Ranger': { name:'Gladiator',  desc:'Powerful and balanced. A complete athlete.' },
-    'Warrior+Brawler':{ name:'Berserker',  desc:'Unstoppable force. Raw power in any form.' },
-    'Scout+Monk':     { name:'Pathfinder', desc:'Light, fast, and enduring. Built for the trail.' },
-    'Scout+Ranger':   { name:'Wayfarer',   desc:'Covers ground. Covers all bases.' },
-    'Scout+Brawler':  { name:'Roughneck',  desc:'Tough as nails. Works hard in any terrain.' },
-    'Ranger+Monk':    { name:'Sentinel',   desc:'Disciplined and complete. Nothing gets past you.' },
-    'Ranger+Brawler': { name:'Vanguard',   desc:'Leads from the front. Functional and fearless.' },
-    'Monk+Brawler':   { name:'Savage',     desc:'Bodyweight brutality. Pure functional power.' },
-  };
-
+  'Monk+Scout':    { name:'Pathfinder', desc:'Light, fast, and enduring. Built for the trail.' },
+  'Monk+Warrior':  { name:'Warlord',    desc:'Brute force refined by bodyweight mastery.' },
+  'Ranger+Scout':  { name:'Wayfarer',   desc:'Covers ground. Covers all bases.' },
+  'Ranger+Warrior':{ name:'Gladiator',  desc:'Powerful and balanced. A complete athlete.' },
+  'Brawler+Scout': { name:'Roughneck',  desc:'Tough as nails. Works hard in any terrain.' },
+  'Brawler+Monk':  { name:'Savage',     desc:'Bodyweight brutality. Pure functional power.' },
+  'Brawler+Ranger':{ name:'Vanguard',   desc:'Leads from the front. Functional and fearless.' },
+  'Brawler+Warrior':{ name:'Berserker', desc:'Unstoppable force. Raw power in any form.' },
+  'Ranger+Monk':   { name:'Sentinel',   desc:'Disciplined and complete. Nothing gets past you.' },
+  'Scout+Warrior': { name:'Ironclad',   desc:'Strength meets endurance. Built for the long haul.' },
+};
   const CLASS_BONUSES = {
     Warrior:  'Power XP +25%',
     Scout:    'Persistence XP +25% · Stair/Ruck sessions worth more',

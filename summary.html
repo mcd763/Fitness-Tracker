@@ -99,6 +99,11 @@
     charts = [];
   }
 
+  function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+}
+
   function weekLabel(dateStr) {
     const d = new Date(dateStr + 'T00:00:00');
     const week = Math.ceil(((d - START) / 86400000 + 1) / 7);
@@ -499,7 +504,7 @@
         return `
           <div style="display:flex; align-items:center; gap:10px; padding:6px 0;
             border-bottom:1px solid var(--border-primary); font-size:12px;">
-            <span style="color:var(--text-tertiary); font-size:11px; min-width:88px;">${e.date}</span>
+            <span style="color:var(--text-tertiary); font-size:11px; min-width:88px;">${formatDate(e.date)}</span>
             <span class="tag tag-grip" style="margin-left:0; flex-shrink:0;">${e.type}</span>
             <span style="color:var(--text-secondary); font-size:11px; flex:1;">
               ${exCount > 0 ? exCount + ' exercises' : ''}
@@ -778,36 +783,44 @@ function packTestReadiness(sessions) {
   
 
   // ── Init ──────────────────────────────────────────────────
-  async function initSummary() {
-    const user = await requireAuth();
-    if (!user) return;
-    entries  = await loadSessions(user.id);
-    weighins = await loadWeighins(user.id);
-    const gtgData = await loadGTG(user.id);
-    gtgLog = gtgData.pullups;
-    pguLog = gtgData.pushups;
-    const prefs = await loadPreferences(user.id);
-    applyTheme(prefs.theme || localStorage.getItem('theme') || 'dark');
-    renderProgram();
-  }
+async function initSummary() {
+  const user = await requireAuth();
+  if (!user) return;
+  
+  // Load preferences first and apply theme immediately
+  const prefs = await loadPreferences(user.id);
+  if (prefs.theme) applyTheme(prefs.theme);
+  
+  entries  = await loadSessions(user.id);
+  weighins = await loadWeighins(user.id);
+  const gtgData = await loadGTG(user.id);
+  gtgLog = gtgData.pullups;
+  pguLog = gtgData.pushups;
+  
+  renderProgram();
+}
   initSummary();
 </script>
 
 <script>
   const themes = ['dark', 'light', 'purple', 'blue', 'red'];
 
-  function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-    const btn = document.getElementById('theme-toggle');
-    if (btn) btn.textContent = themes[(themes.indexOf(theme) + 1) % themes.length];
-  }
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme); // must be here
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = themes[(themes.indexOf(theme) + 1) % themes.length];
+}
 
-  function toggleTheme() {
-    const current = localStorage.getItem('theme') || 'dark';
-    const next = themes[(themes.indexOf(current) + 1) % themes.length];
-    applyTheme(next);
+function toggleTheme() {
+  const current = localStorage.getItem('theme') || 'dark';
+  const next = themes[(themes.indexOf(current) + 1) % themes.length];
+  applyTheme(next);
+  // Save to Supabase if user is logged in
+  if (typeof currentUser !== 'undefined' && currentUser) {
+    savePreferences(currentUser.id, { theme: next });
   }
+}
 
   applyTheme(localStorage.getItem('theme') || 'dark');
 </script>

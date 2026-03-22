@@ -602,6 +602,10 @@
     padding:4px 8px;
   `;
 
+  function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+}
   // ── App init ──────────────────────────────────────────────
   async function initApp() {
     currentUser = await requireAuth();
@@ -1401,7 +1405,7 @@ if (Object.keys(mdb).length > 0) {
       card.style.cssText = 'padding:10px 0; border-bottom:1px solid var(--border-primary);';
       card.innerHTML = `
         <div class="session-header" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-          <span style="color:var(--text-tertiary); font-size:11px; min-width:88px; flex-shrink:0;">${e.date}</span>
+          <span style="color:var(--text-tertiary); font-size:11px; min-width:88px; flex-shrink:0;">${formatDate(e.date)}</span>
           <span class="tag ${tagClass(e.type)}" style="margin-left:0; flex-shrink:0;">${e.type}</span>
           ${meta?`<span style="font-size:11px; color:var(--text-secondary); flex:1;">${meta}</span>`:'<span style="flex:1;"></span>'}
           <button onclick="editSession(${realIndex})" style="background:none; border:none; color:var(--text-tertiary); font-size:11px; cursor:pointer; padding:0 4px;" title="Edit session">✎</button>
@@ -1499,7 +1503,7 @@ if (Object.keys(mdb).length > 0) {
       const row = document.createElement('div');
       row.style.cssText = 'display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border-primary); font-size:12px;';
       row.innerHTML = `
-        <span style="color:var(--text-tertiary); font-size:11px; min-width:88px; flex-shrink:0;">${w.date}</span>
+        <span style="color:var(--text-tertiary); font-size:11px; min-width:88px; flex-shrink:0;">${formatDate(w.date)}</span>
         <span style="color:var(--text-primary); font-weight:500;">${w.weight} lbs${deltaHTML}</span>
         <span style="color:var(--text-secondary); font-size:11px; flex:1;">${w.notes||''}</span>
         <button onclick="deleteWeighIn(${w.i})" style="background:none; border:none; color:var(--text-tertiary); font-size:16px; cursor:pointer; padding:0 4px; line-height:1;">×</button>
@@ -1627,7 +1631,7 @@ if (Object.keys(mdb).length > 0) {
       row.style.cssText = 'padding:6px 0; border-bottom:1px solid var(--border-primary);';
       row.innerHTML = `
         <div style="display:flex; align-items:center; gap:10px; margin-bottom:3px;">
-          <span style="color:var(--text-tertiary); font-size:11px; min-width:88px;">${date}</span>
+          <span style="color:var(--text-tertiary); font-size:11px; min-width:88px;">${formatDate(date)}</span>     
           <span style="font-family:var(--font-display); font-size:14px; font-weight:700; color:${met?accentText:'var(--text-primary)'};">${dayTotal} reps</span>
           ${met?`<span style="font-size:10px; color:${accentText};">✓ goal</span>`:''}
         </div>
@@ -1648,11 +1652,15 @@ if (Object.keys(mdb).length > 0) {
     if (btn) btn.textContent = themes[(themes.indexOf(theme) + 1) % themes.length];
   }
 
-  function toggleTheme() {
-    const current = localStorage.getItem('theme') || 'dark';
-    const next = themes[(themes.indexOf(current) + 1) % themes.length];
-    applyTheme(next);
+function toggleTheme() {
+  const current = localStorage.getItem('theme') || 'dark';
+  const next = themes[(themes.indexOf(current) + 1) % themes.length];
+  applyTheme(next);
+  // Save to Supabase if user is logged in
+  if (typeof currentUser !== 'undefined' && currentUser) {
+    savePreferences(currentUser.id, { theme: next });
   }
+}
 
   applyTheme(localStorage.getItem('theme') || 'dark');
   
