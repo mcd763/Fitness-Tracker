@@ -1,4 +1,4 @@
-const CACHE = 'fittracker-v2';  // was v1
+const CACHE = 'fittracker-v3';
 const STATIC = [
   '/Fitness-Tracker/',
   '/Fitness-Tracker/login.html',
