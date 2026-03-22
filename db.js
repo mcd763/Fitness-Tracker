@@ -466,3 +466,70 @@ function computeRadarData(xpTotals) {
     'Endurance':       avg('quads', 'calves', 'glutes', 'erector_spinae'),
   };
 }
+
+function detectPRs(exerciseName, newEx, allSessions, currentSessionId) {
+  const prs = [];
+  
+  // Gather all previous sets for this exercise
+  let prevMaxWeight = 0;
+  let prevMaxVolume = 0;
+  let prevMaxReps   = 0;
+
+  allSessions.forEach(session => {
+    if (session.id === currentSessionId) return; // skip current session
+    (session.exercises || []).forEach(ex => {
+      if (ex.name.toLowerCase() !== exerciseName.toLowerCase()) return;
+
+      if (ex.varies && ex.setData) {
+        ex.setData.forEach(s => {
+          const w = parseFloat(s.weight) || 0;
+          const r = parseFloat(s.reps)   || 0;
+          prevMaxWeight = Math.max(prevMaxWeight, w);
+          prevMaxReps   = Math.max(prevMaxReps, r);
+        });
+        const vol = ex.setData.reduce((sum, s) => {
+          return sum + ((parseFloat(s.reps)||0) * (parseFloat(s.weight)||0));
+        }, 0);
+        prevMaxVolume = Math.max(prevMaxVolume, vol);
+      } else {
+        const sets   = parseFloat(ex.sets)   || 1;
+        const reps   = parseFloat(ex.reps)   || 0;
+        const weight = parseFloat(ex.weight) || 0;
+        prevMaxWeight = Math.max(prevMaxWeight, weight);
+        prevMaxReps   = Math.max(prevMaxReps, reps);
+        prevMaxVolume = Math.max(prevMaxVolume, sets * reps * weight);
+      }
+    });
+  });
+
+  // Now check new exercise against previous bests
+  let newMaxWeight = 0;
+  let newMaxReps   = 0;
+  let newVolume    = 0;
+
+  if (newEx.varies && newEx.setData) {
+    newEx.setData.forEach(s => {
+      const w = parseFloat(s.weight) || 0;
+      const r = parseFloat(s.reps)   || 0;
+      newMaxWeight = Math.max(newMaxWeight, w);
+      newMaxReps   = Math.max(newMaxReps, r);
+    });
+    newVolume = newEx.setData.reduce((sum, s) => {
+      return sum + ((parseFloat(s.reps)||0) * (parseFloat(s.weight)||0));
+    }, 0);
+  } else {
+    const sets   = parseFloat(newEx.sets)   || 1;
+    const reps   = parseFloat(newEx.reps)   || 0;
+    const weight = parseFloat(newEx.weight) || 0;
+    newMaxWeight = weight;
+    newMaxReps   = reps;
+    newVolume    = sets * reps * weight;
+  }
+
+  // Only flag PR if there's previous data to compare against
+  if (prevMaxWeight > 0 && newMaxWeight > prevMaxWeight) prs.push('weight');
+  if (prevMaxVolume > 0 && newVolume    > prevMaxVolume) prs.push('volume');
+  if (prevMaxReps   > 0 && newMaxReps   > prevMaxReps)   prs.push('reps');
+
+  return prs;
+}

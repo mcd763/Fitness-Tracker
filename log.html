@@ -606,6 +606,15 @@
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
 }
+
+function renderPRBadges(prs) {
+  const badges = {
+    weight: '<span title="Weight PR" style="font-size:10px; background:var(--accent-fire-bg); color:var(--accent-fire-text); border:1px solid var(--accent-fire); border-radius:var(--radius-tag); padding:1px 6px; margin-left:4px; font-family:var(--font-display); font-weight:600; letter-spacing:0.06em;">🏋️ WT PR</span>',
+    volume: '<span title="Volume PR" style="font-size:10px; background:var(--accent-grip-bg); color:var(--accent-grip-text); border:1px solid var(--accent-grip); border-radius:var(--radius-tag); padding:1px 6px; margin-left:4px; font-family:var(--font-display); font-weight:600; letter-spacing:0.06em;">📈 VOL PR</span>',
+    reps:   '<span title="Rep PR"    style="font-size:10px; background:var(--accent-pack-bg); color:var(--accent-pack-text); border:1px solid var(--accent-pack); border-radius:var(--radius-tag); padding:1px 6px; margin-left:4px; font-family:var(--font-display); font-weight:600; letter-spacing:0.06em;">🔁 REP PR</span>',
+  };
+  return prs.map(p => badges[p] || '').join('');
+}
   // ── App init ──────────────────────────────────────────────
   async function initApp() {
     currentUser = await requireAuth();
@@ -1098,6 +1107,13 @@ if (Object.keys(mdb).length > 0) {
       await calculateAndLogSessionXP(currentUser.id, session, mdb, rpgProf);
     }
     entries.push(session);
+    // Detect PRs for each exercise in the new session
+session.exercises.forEach((ex, i) => {
+  const prs = detectPRs(ex.name, ex, entries, session.id);
+  if (prs.length > 0) {
+    entries[entries.length - 1].exercises[i].prs = prs;
+  }
+});
     render();
 
     document.getElementById('log-type').value     = '';
@@ -1324,6 +1340,7 @@ if (Object.keys(mdb).length > 0) {
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:${ex.varies?'4px':'0'};">
                 <div style="flex:1;">
                   <span style="color:var(--text-primary); font-size:12px;">${ex.name}</span>
+                  ${ex.prs && ex.prs.length > 0 ? renderPRBadges(ex.prs) : ''}
                   ${ex.notes ? `<div style="font-size:11px; color:var(--text-tertiary); margin-top:2px;">📝 ${ex.notes}</div>` : ''}
                 </div>
                 ${ex.varies ? `<span style="color:var(--text-tertiary); font-size:11px;">${ex.sets?ex.sets+' sets':''}</span>` : detailHTML}
